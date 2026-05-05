@@ -11,6 +11,22 @@ import MyReports from './pages/MyReports';
 import AdminPending from './pages/AdminPending';
 import AdminReports from './pages/AdminReports';
 
+import { useAuth } from './contexts/AuthContext';
+
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark-950">
+        <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+  
+  return <Navigate to={user ? "/dashboard" : "/login"} replace />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -73,8 +89,9 @@ function App() {
             />
           </Route>
 
-          {/* Redirect */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Root & Catch-all Redirect */}
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
