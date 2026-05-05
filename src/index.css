@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-950 text-dark-100 font-sans antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-dark-500;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-dark-800/50 backdrop-blur-xl border border-dark-700/50 rounded-2xl shadow-xl;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:bg-dark-800/70 hover:border-dark-600/50 hover:shadow-2xl hover:-translate-y-0.5;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-6 py-3 rounded-xl
+           hover:from-primary-400 hover:to-primary-500 active:from-primary-600 active:to-primary-700
+           transition-all duration-200 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-primary-500/25;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-700/50 text-dark-200 font-medium px-6 py-3 rounded-xl border border-dark-600/50
+           hover:bg-dark-600/50 hover:text-white transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-6 py-3 rounded-xl
+           hover:from-red-400 hover:to-red-500 transition-all duration-200
+           shadow-lg shadow-red-500/25 hover:shadow-red-500/40
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-success {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold px-6 py-3 rounded-xl
+           hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200
+           shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full bg-dark-800/80 border border-dark-600/50 rounded-xl px-4 py-3 text-dark-100
+           placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50
+           focus:border-primary-500/50 transition-all duration-200;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-dark-300 mb-2;
+  }
+
+  .badge-pending {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+
+  .badge-approved {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  }
+
+  .badge-rejected {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .badge-organik {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-green-500/20 text-green-400 border border-green-500/30;
+  }
+
+  .badge-anorganik {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+           bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+
+  .stat-card {
+    @apply glass-card p-6 relative overflow-hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-1 bg-gradient-to-r;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-dark-400 font-medium
+           hover:bg-dark-800/50 hover:text-dark-100 transition-all duration-200;
+  }
+
+  .nav-link.active {
+    @apply bg-primary-500/10 text-primary-400 border border-primary-500/20;
+  }
+}
+
+/* Custom animations */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Page transition */
+.page-enter {
+  animation: pageEnter 0.4s ease-out;
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
