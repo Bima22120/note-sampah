@@ -21,12 +21,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
+    let ignore = false;
+    fetchData(ignore);
+    return () => { ignore = true; };
   }, [user, isAdmin]);
 
-  const fetchData = async () => {
+  const fetchData = async (ignore) => {
     if (!user) return;
-    const safetyTimer = setTimeout(() => setLoading(false), 8000);
+    const safetyTimer = setTimeout(() => {
+      if (!ignore) setLoading(false);
+    }, 8000);
     try {
       let query = supabase.from('waste_reports').select('*, profiles:user_id(full_name)');
       
@@ -38,20 +42,22 @@ export default function Dashboard() {
       const { data, error } = await query.order('created_at', { ascending: false });
       if (error) throw error;
 
-      const reports = data || [];
-      setStats({
-        total: reports.length,
-        pending: reports.filter(r => r.status === 'pending').length,
-        approved: reports.filter(r => r.status === 'approved').length,
-        rejected: reports.filter(r => r.status === 'rejected').length,
-        totalWeight: reports.filter(r => r.status === 'approved').reduce((sum, r) => sum + r.weight_grams, 0),
-      });
-      setRecentReports(reports.slice(0, 5));
+      if (!ignore) {
+        const reports = data || [];
+        setStats({
+          total: reports.length,
+          pending: reports.filter(r => r.status === 'pending').length,
+          approved: reports.filter(r => r.status === 'approved').length,
+          rejected: reports.filter(r => r.status === 'rejected').length,
+          totalWeight: reports.filter(r => r.status === 'approved').reduce((sum, r) => sum + r.weight_grams, 0),
+        });
+        setRecentReports(reports.slice(0, 5));
+      }
     } catch (e) {
       console.error(e);
     } finally {
       clearTimeout(safetyTimer);
-      setLoading(false);
+      if (!ignore) setLoading(false);
     }
   };
 

@@ -96,6 +96,7 @@ export default function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@email.com"
                   className="input-field pl-12"
+                  autoComplete="username"
                   required
                 />
               </div>
@@ -112,6 +113,7 @@ export default function Register() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimal 6 karakter"
                   className="input-field pl-12 pr-12"
+                  autoComplete="new-password"
                   required
                 />
                 <button
@@ -135,6 +137,7 @@ export default function Register() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Ulangi password"
                   className="input-field pl-12"
+                  autoComplete="new-password"
                   required
                 />
               </div>

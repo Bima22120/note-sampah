@@ -132,6 +132,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@email.com"
                   className="input-field pl-12"
+                  autoComplete="username"
                   required
                 />
               </div>
@@ -148,6 +149,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
                   className="input-field pl-12 pr-12"
+                  autoComplete="current-password"
                   required
                 />
                 <button
