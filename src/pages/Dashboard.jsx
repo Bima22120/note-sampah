@@ -12,6 +12,7 @@ import {
   HiOutlineDocumentReport,
   HiOutlineTrendingUp,
 } from 'react-icons/hi';
+import logoGambar from '../assets/oasesongo.jpg';
 
 export default function Dashboard() {
   const { profile, isAdmin } = useAuth();
@@ -68,7 +69,14 @@ export default function Dashboard() {
     <div className="page-enter space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white">
+        <h1 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-3">
+          {isAdmin && (
+            <img 
+              src={logoGambar} 
+              alt="Logo NoteSampah" 
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover" 
+            />
+          )}
           {isAdmin ? 'Dashboard Admin' : 'Selamat datang di NoteSampah!'}
         </h1>
         <p className="text-dark-400 mt-1">
