@@ -15,6 +15,9 @@ DROP POLICY IF EXISTS "Users can view own reports" ON waste_reports;
 DROP POLICY IF EXISTS "Admin can view all reports" ON waste_reports;
 DROP POLICY IF EXISTS "Users can insert own reports" ON waste_reports;
 DROP POLICY IF EXISTS "Admin can update all reports" ON waste_reports;
+DROP POLICY IF EXISTS "Admin can delete reports" ON waste_reports;
+DROP POLICY IF EXISTS "Public can view all reports" ON waste_reports;
+DROP POLICY IF EXISTS "Public can insert reports" ON waste_reports;
 
 -- 4. Buat policy baru yang mengizinkan anon (public) untuk melihat dan membuat laporan
 -- Public bisa melihat semua laporan

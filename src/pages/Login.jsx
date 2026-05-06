@@ -9,16 +9,21 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, user, profile } = useAuth();
+  const { signIn, signOut, user, profile } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef(null);
 
   // Redirect ke dashboard jika sudah login
   useEffect(() => {
     if (user && profile) {
-      navigate('/dashboard', { replace: true });
+      if (profile.role === 'admin') {
+        navigate('/dashboard', { replace: true });
+      } else {
+        signOut();
+        toast.error('Sesi Anda diakhiri. Hanya Admin yang diizinkan.');
+      }
     }
-  }, [user, profile, navigate]);
+  }, [user, profile, navigate, signOut]);
 
   // Deteksi autofill dari browser setelah mount
   useEffect(() => {
@@ -70,6 +75,7 @@ export default function Login() {
 
       if (profile?.role !== 'admin') {
         toast.error('Hanya admin yang dapat login!');
+        await signOut();
         setLoading(false);
         return;
       }

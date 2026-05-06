@@ -67,16 +67,16 @@ export default function NewReport() {
                 <label htmlFor="rt" className="input-label flex items-center gap-2">
                   <HiOutlineLocationMarker className="w-4 h-4" /> RT
                 </label>
-                <input id="rt" type="text" value={rt}
-                  onChange={(e) => setRt(e.target.value)}
+                <input id="rt" type="text" value={rt} maxLength={3}
+                  onChange={(e) => setRt(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="Contoh: 01" className="input-field" required />
               </div>
               <div>
                 <label htmlFor="rw" className="input-label flex items-center gap-2">
                   <HiOutlineLocationMarker className="w-4 h-4" /> RW
                 </label>
-                <input id="rw" type="text" value={rw}
-                  onChange={(e) => setRw(e.target.value)}
+                <input id="rw" type="text" value={rw} maxLength={3}
+                  onChange={(e) => setRw(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="Contoh: 02" className="input-field" required />
               </div>
             </div>
