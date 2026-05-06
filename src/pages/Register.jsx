@@ -73,15 +73,17 @@ export default function Register() {
               <label htmlFor="fullName" className="input-label">Nama Lengkap</label>
               <div className="relative">
                 <HiOutlineUser className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nama lengkap Anda"
-                  className="input-field pl-12"
-                  required
-                />
+                <div>
+                  <input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Nama lengkap Anda"
+                    className="input-field pl-12"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -89,16 +91,18 @@ export default function Register() {
               <label htmlFor="email" className="input-label">Email</label>
               <div className="relative">
                 <HiOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="input-field pl-12"
-                  autoComplete="username"
-                  required
-                />
+                <div>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="input-field pl-12"
+                    autoComplete="username"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -106,16 +110,18 @@ export default function Register() {
               <label htmlFor="password" className="input-label">Password</label>
               <div className="relative">
                 <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
-                  className="input-field pl-12 pr-12"
-                  autoComplete="new-password"
-                  required
-                />
+                <div>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Minimal 6 karakter"
+                    className="input-field pl-12 pr-12"
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -130,16 +136,18 @@ export default function Register() {
               <label htmlFor="confirmPassword" className="input-label">Konfirmasi Password</label>
               <div className="relative">
                 <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                <input
-                  id="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Ulangi password"
-                  className="input-field pl-12"
-                  autoComplete="new-password"
-                  required
-                />
+                <div>
+                  <input
+                    id="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Ulangi password"
+                    className="input-field pl-12"
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
               </div>
             </div>
 

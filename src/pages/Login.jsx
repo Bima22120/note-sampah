@@ -125,16 +125,18 @@ export default function Login() {
               <label htmlFor="email" className="input-label">Email</label>
               <div className="relative">
                 <HiOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="input-field pl-12"
-                  autoComplete="username"
-                  required
-                />
+                <div>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="input-field pl-12"
+                    autoComplete="username"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -142,16 +144,18 @@ export default function Login() {
               <label htmlFor="password" className="input-label">Password</label>
               <div className="relative">
                 <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  className="input-field pl-12 pr-12"
-                  autoComplete="current-password"
-                  required
-                />
+                <div>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Masukkan password"
+                    className="input-field pl-12 pr-12"
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
