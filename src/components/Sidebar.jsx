@@ -9,33 +9,30 @@ import {
   HiOutlineLogout,
   HiOutlineMenu,
   HiOutlineX,
+  HiOutlineLogin,
 } from 'react-icons/hi';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function Sidebar() {
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const handleSignOut = async (e) => {
-    // Cegah double-click dan propagation
     e.preventDefault();
     e.stopPropagation();
-
     if (signingOut) return;
     setSigningOut(true);
 
     try {
       await signOut();
       toast.success('Berhasil keluar!');
-      // Force navigation ke login
       navigate('/login', { replace: true });
     } catch (error) {
       console.error('Sign out error:', error);
       toast.error('Gagal keluar, mencoba paksa...');
-      // Force redirect bahkan jika signOut gagal
       navigate('/login', { replace: true });
     } finally {
       setSigningOut(false);
@@ -45,7 +42,7 @@ export default function Sidebar() {
   const userLinks = [
     { to: '/dashboard', icon: HiOutlineHome, label: 'Dashboard' },
     { to: '/reports/new', icon: HiOutlineDocumentAdd, label: 'Laporan Baru' },
-    { to: '/reports', icon: HiOutlineClipboardList, label: 'Laporan Saya' },
+    { to: '/reports', icon: HiOutlineClipboardList, label: 'Daftar Laporan' },
   ];
 
   const adminLinks = [
@@ -91,37 +88,50 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* User info */}
+      {/* User info / Login Admin */}
       <div className="p-4 border-t border-dark-700/50">
-        <div className="flex items-center gap-3 mb-3 px-2">
-          <div className={`w-9 h-9 ${isAdmin ? 'bg-gradient-to-br from-amber-400 to-red-600' : 'bg-gradient-to-br from-accent-400 to-accent-600'} rounded-lg flex items-center justify-center text-white font-semibold text-sm`}>
-            {(profile?.full_name || user?.user_metadata?.full_name || 'U').charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-dark-200 truncate">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</p>
-            <p className={`text-xs capitalize ${isAdmin ? 'text-amber-400 font-semibold' : 'text-dark-500'}`}>
-              {isAdmin ? '🛡️ Admin' : '👤 User'}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleSignOut}
-          disabled={signingOut}
-          className={`nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 ${signingOut ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
-          style={{ pointerEvents: signingOut ? 'none' : 'auto' }}
-        >
-          {signingOut ? (
-            <>
-              <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-              <span>Keluar...</span>
-            </>
-          ) : (
-            <>
-              <HiOutlineLogout className="w-5 h-5" />
-              <span>Keluar</span>
-            </>
-          )}
-        </button>
+        {isAdmin ? (
+          <>
+            <div className="flex items-center gap-3 mb-3 px-2">
+              <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-red-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm">
+                {(profile?.full_name || 'A').charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-dark-200 truncate">{profile?.full_name || 'Admin'}</p>
+                <p className="text-xs capitalize text-amber-400 font-semibold">
+                  🛡️ Admin
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className={`nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 ${signingOut ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+              style={{ pointerEvents: signingOut ? 'none' : 'auto' }}
+            >
+              {signingOut ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                  <span>Keluar...</span>
+                </>
+              ) : (
+                <>
+                  <HiOutlineLogout className="w-5 h-5" />
+                  <span>Keluar</span>
+                </>
+              )}
+            </button>
+          </>
+        ) : (
+          <NavLink
+            to="/login"
+            onClick={() => setMobileOpen(false)}
+            className="nav-link w-full text-dark-300 hover:text-white"
+          >
+            <HiOutlineLogin className="w-5 h-5" />
+            <span>Login Admin</span>
+          </NavLink>
+        )}
       </div>
     </div>
   );

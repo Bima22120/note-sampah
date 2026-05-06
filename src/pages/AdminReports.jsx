@@ -32,7 +32,7 @@ export default function AdminReports() {
       const s = search.toLowerCase();
       result = result.filter(r =>
         r.description?.toLowerCase().includes(s) ||
-        r.profiles?.full_name?.toLowerCase().includes(s) ||
+        (r.nama_pelapor || r.profiles?.full_name || '').toLowerCase().includes(s) ||
         r.category?.toLowerCase().includes(s)
       );
     }
@@ -129,7 +129,9 @@ export default function AdminReports() {
   const downloadExcel = () => {
     const data = filtered.map((r, i) => ({
       'No': i + 1,
-      'Pelapor': r.profiles?.full_name || '-',
+      'Pelapor': r.nama_pelapor || r.profiles?.full_name || '-',
+      'RT': r.rt || '-',
+      'RW': r.rw || '-',
       'Kategori': r.category === 'organik' ? 'Organik' : 'Anorganik',
       'Berat (gram)': r.weight_grams,
       'Berat (kg)': (r.weight_grams / 1000).toFixed(2),
@@ -263,7 +265,9 @@ export default function AdminReports() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-dark-200 font-medium text-sm">{r.profiles?.full_name || 'Unknown'}</p>
+                        <p className="text-dark-200 font-medium text-sm">
+                          {r.nama_pelapor || r.profiles?.full_name || 'Tanpa Nama'} {r.rt && r.rw ? `(RT ${r.rt}/RW ${r.rw})` : ''}
+                        </p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           r.status === 'approved' ? 'bg-emerald-500/15 text-emerald-400' :
                           r.status === 'rejected' ? 'bg-red-500/15 text-red-400' :

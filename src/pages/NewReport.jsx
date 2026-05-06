@@ -1,68 +1,32 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { HiOutlineScale, HiOutlineTag, HiOutlineDocumentText } from 'react-icons/hi';
+import { HiOutlineScale, HiOutlineTag, HiOutlineDocumentText, HiOutlineUser, HiOutlineLocationMarker } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 export default function NewReport() {
-  const { user, profile, fetchProfile } = useAuth();
   const navigate = useNavigate();
+  const [namaPelapor, setNamaPelapor] = useState('');
+  const [rt, setRt] = useState('');
+  const [rw, setRw] = useState('');
   const [category, setCategory] = useState('');
   const [weightGrams, setWeightGrams] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Pastikan profile ada sebelum kirim laporan
-  const ensureProfile = async () => {
-    if (profile) return true;
-
-    // Cek apakah profile sudah ada di database
-    const { data } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', user.id)
-      .single();
-
-    if (data) {
-      await fetchProfile(user.id);
-      return true;
-    }
-
-    // Buat profile jika belum ada
-    const fullName = user.user_metadata?.full_name || 'User';
-    const { error } = await supabase
-      .from('profiles')
-      .insert({
-        id: user.id,
-        full_name: fullName,
-        role: 'user',
-      });
-
-    if (error) {
-      console.error('Error creating profile:', error);
-      return false;
-    }
-
-    await fetchProfile(user.id);
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!namaPelapor.trim()) { toast.error('Nama wajib diisi!'); return; }
+    if (!rt.trim() || !rw.trim()) { toast.error('RT dan RW wajib diisi!'); return; }
     if (!category) { toast.error('Pilih kategori sampah!'); return; }
     if (!weightGrams || Number(weightGrams) <= 0) { toast.error('Masukkan berat yang valid!'); return; }
     setLoading(true);
+    
     try {
-      // Pastikan profile ada dulu
-      const profileReady = await ensureProfile();
-      if (!profileReady) {
-        toast.error('Gagal membuat profil. Silakan logout dan login kembali.');
-        return;
-      }
-
       const { error } = await supabase.from('waste_reports').insert({
-        user_id: user.id,
+        nama_pelapor: namaPelapor.trim(),
+        rt: rt.trim(),
+        rw: rw.trim(),
         category,
         weight_grams: Number(weightGrams),
         description: description.trim(),
@@ -85,25 +49,56 @@ export default function NewReport() {
         <p className="text-dark-400 mt-1">Isi form berikut untuk melaporkan sampah yang telah ditimbang</p>
       </div>
 
-      <div className="glass-card p-8">
+      <div className="glass-card p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Identitas Pelapor */}
+          <div className="bg-dark-800/50 p-5 rounded-xl border border-dark-700/50 space-y-4">
+            <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+              <HiOutlineUser className="w-5 h-5 text-primary-400" /> Data Diri
+            </h3>
+            <div>
+              <label htmlFor="namaPelapor" className="input-label">Nama Lengkap</label>
+              <input id="namaPelapor" type="text" value={namaPelapor}
+                onChange={(e) => setNamaPelapor(e.target.value)}
+                placeholder="Masukkan nama lengkap Anda" className="input-field" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="rt" className="input-label flex items-center gap-2">
+                  <HiOutlineLocationMarker className="w-4 h-4" /> RT
+                </label>
+                <input id="rt" type="text" value={rt}
+                  onChange={(e) => setRt(e.target.value)}
+                  placeholder="Contoh: 01" className="input-field" required />
+              </div>
+              <div>
+                <label htmlFor="rw" className="input-label flex items-center gap-2">
+                  <HiOutlineLocationMarker className="w-4 h-4" /> RW
+                </label>
+                <input id="rw" type="text" value={rw}
+                  onChange={(e) => setRw(e.target.value)}
+                  placeholder="Contoh: 02" className="input-field" required />
+              </div>
+            </div>
+          </div>
+
           {/* Category */}
           <div>
             <label className="input-label flex items-center gap-2">
               <HiOutlineTag className="w-4 h-4" /> Kategori Sampah
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button type="button" onClick={() => setCategory('organik')}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'organik' ? 'border-green-500 bg-green-500/10' : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'}`}>
-                <div className="text-2xl mb-2">🌿</div>
-                <p className={`font-semibold ${category === 'organik' ? 'text-green-400' : 'text-dark-200'}`}>Organik</p>
-                <p className="text-xs text-dark-500 mt-1">Sisa makanan, daun, kayu, dll</p>
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'organik' ? 'border-green-500 bg-green-500/10' : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'}`}>
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🌿</div>
+                <p className={`font-semibold ${category === 'organik' ? 'text-green-400' : 'text-dark-200'} text-sm sm:text-base`}>Organik</p>
+                <p className="text-xs text-dark-500 mt-1 hidden sm:block">Sisa makanan, daun, kayu, dll</p>
               </button>
               <button type="button" onClick={() => setCategory('anorganik')}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'anorganik' ? 'border-blue-500 bg-blue-500/10' : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'}`}>
-                <div className="text-2xl mb-2">🔧</div>
-                <p className={`font-semibold ${category === 'anorganik' ? 'text-blue-400' : 'text-dark-200'}`}>Anorganik</p>
-                <p className="text-xs text-dark-500 mt-1">Plastik, logam, kaca, dll</p>
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'anorganik' ? 'border-blue-500 bg-blue-500/10' : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'}`}>
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🔧</div>
+                <p className={`font-semibold ${category === 'anorganik' ? 'text-blue-400' : 'text-dark-200'} text-sm sm:text-base`}>Anorganik</p>
+                <p className="text-xs text-dark-500 mt-1 hidden sm:block">Plastik, logam, kaca, dll</p>
               </button>
             </div>
           </div>
@@ -142,6 +137,8 @@ export default function NewReport() {
             <div className="bg-dark-800/80 rounded-xl p-4 border border-dark-700/50">
               <p className="text-xs font-semibold text-dark-400 uppercase tracking-wider mb-3">Ringkasan Laporan</p>
               <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><p className="text-dark-500">Nama</p><p className="text-dark-200 font-medium truncate">{namaPelapor || '-'}</p></div>
+                <div><p className="text-dark-500">RT / RW</p><p className="text-dark-200 font-medium">{rt || '-'} / {rw || '-'}</p></div>
                 <div><p className="text-dark-500">Kategori</p><p className="text-dark-200 font-medium capitalize">{category === 'organik' ? '🌿 Organik' : '🔧 Anorganik'}</p></div>
                 <div><p className="text-dark-500">Berat</p><p className="text-dark-200 font-medium">{Number(weightGrams).toLocaleString('id-ID')} gram ({weightKg} kg)</p></div>
                 <div className="col-span-2"><p className="text-dark-500">Status</p><span className="badge-pending">⏳ Pending</span></div>
@@ -149,11 +146,11 @@ export default function NewReport() {
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading} className="btn-primary flex-1 flex items-center justify-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button type="submit" disabled={loading} className="btn-primary flex-1 flex items-center justify-center gap-2 order-1 sm:order-2">
               {loading ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Mengirim...</span></> : 'Kirim Laporan'}
             </button>
-            <button type="button" onClick={() => navigate('/reports')} className="btn-secondary">Batal</button>
+            <button type="button" onClick={() => navigate('/reports')} className="btn-secondary sm:w-1/3 order-2 sm:order-1">Batal</button>
           </div>
         </form>
       </div>

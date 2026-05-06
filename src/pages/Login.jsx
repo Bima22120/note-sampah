@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff, HiOutlineShieldCheck, HiOutlineUser } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 export default function Login() {
@@ -9,7 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loginMode, setLoginMode] = useState('user'); // 'user' or 'admin'
   const { signIn, user, profile } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef(null);
@@ -69,30 +68,20 @@ export default function Login() {
     try {
       const { profile } = await signIn(submitEmail, submitPassword);
 
-      // Cek role sesuai mode login
-      if (loginMode === 'admin' && profile?.role !== 'admin') {
-        toast.error('Akun ini bukan akun Admin!');
+      if (profile?.role !== 'admin') {
+        toast.error('Hanya admin yang dapat login!');
         setLoading(false);
         return;
       }
 
-      if (loginMode === 'user' && profile?.role === 'admin') {
-        toast.error('Akun Admin tidak bisa login di mode User. Gunakan tab Admin.');
-        setLoading(false);
-        return;
-      }
-
-      toast.success(`Berhasil masuk sebagai ${loginMode === 'admin' ? 'Admin' : 'User'}!`);
+      toast.success('Berhasil masuk sebagai Admin!');
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       
-      // Tampilkan pesan error yang jelas tanpa menghapus token
       const msg = error.message || '';
       if (msg.includes('Invalid login credentials')) {
         toast.error('Email atau password salah.');
-      } else if (msg.includes('Email not confirmed')) {
-        toast.error('Email belum diverifikasi. Cek inbox email Anda.');
       } else if (msg.includes('Network') || msg.includes('fetch')) {
         toast.error('Gagal terhubung ke server. Periksa koneksi internet.');
       } else {
@@ -104,58 +93,26 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-950 relative overflow-hidden px-4">
+    <div className="min-h-screen flex items-center justify-center bg-dark-950 relative overflow-hidden px-4 sm:px-6 lg:px-8">
       {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className={`absolute top-1/4 left-1/4 w-96 h-96 ${loginMode === 'admin' ? 'bg-amber-500/10' : 'bg-primary-500/10'} rounded-full blur-3xl animate-pulse-slow transition-colors duration-700`} />
-        <div className={`absolute bottom-1/4 right-1/4 w-80 h-80 ${loginMode === 'admin' ? 'bg-red-500/10' : 'bg-accent-500/10'} rounded-full blur-3xl animate-pulse-slow transition-colors duration-700`} style={{ animationDelay: '1.5s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-500/5 rounded-full blur-3xl" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse-slow transition-colors duration-700" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-80 sm:h-80 bg-red-500/10 rounded-full blur-3xl animate-pulse-slow transition-colors duration-700" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-primary-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="w-full max-w-md relative animate-fade-in">
+      <div className="w-full max-w-md relative animate-fade-in z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className={`inline-flex items-center justify-center w-16 h-16 ${loginMode === 'admin' ? 'bg-gradient-to-br from-amber-400 to-red-600 shadow-amber-500/30' : 'bg-gradient-to-br from-primary-400 to-primary-600 shadow-primary-500/30'} rounded-2xl shadow-2xl mb-4 transition-all duration-500`}>
-            <span className="text-3xl">{loginMode === 'admin' ? '🛡️' : '♻'}</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-red-600 shadow-amber-500/30 rounded-2xl shadow-2xl mb-4 transition-all duration-500">
+            <span className="text-3xl"></span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">NoteSampah</h1>
-          <p className="text-dark-400">Sistem Pengelolaan & Pembukuan Sampah</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Login Admin</h1>
+          <p className="text-dark-400 text-sm sm:text-base">NoteSampah - Panel Manajemen</p>
         </div>
 
         {/* Login Form */}
-        <div className="glass-card p-8">
-          {/* Role Tabs */}
-          <div className="flex mb-6 bg-dark-800/80 rounded-xl p-1 border border-dark-700/50">
-            <button
-              type="button"
-              onClick={() => setLoginMode('user')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 ${
-                loginMode === 'user'
-                  ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                  : 'text-dark-400 hover:text-dark-200'
-              }`}
-            >
-              <HiOutlineUser className="w-5 h-5" />
-              User
-            </button>
-            <button
-              type="button"
-              onClick={() => setLoginMode('admin')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 ${
-                loginMode === 'admin'
-                  ? 'bg-gradient-to-r from-amber-500 to-red-500 text-white shadow-lg shadow-amber-500/30'
-                  : 'text-dark-400 hover:text-dark-200'
-              }`}
-            >
-              <HiOutlineShieldCheck className="w-5 h-5" />
-              Admin
-            </button>
-          </div>
-
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {loginMode === 'admin' ? 'Masuk sebagai Admin' : 'Masuk ke Akun'}
-          </h2>
-
+        <div className="glass-card p-6 sm:p-8">
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="login-email" className="input-label">Email</label>
@@ -169,7 +126,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onInput={(e) => setEmail(e.target.value)}
-                    placeholder="nama@email.com"
+                    placeholder="admin@email.com"
                     className="input-field pl-12"
                     autoComplete="username"
                     required
@@ -190,7 +147,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onInput={(e) => setPassword(e.target.value)}
-                    placeholder="Masukkan password"
+                    placeholder="Masukkan password admin"
                     className="input-field pl-12 pr-12"
                     autoComplete="current-password"
                     required
@@ -209,11 +166,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 ${
-                loginMode === 'admin'
-                  ? 'bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600 shadow-lg shadow-amber-500/25'
-                  : 'btn-primary'
-              }`}
+              className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600 shadow-lg shadow-amber-500/25"
             >
               {loading ? (
                 <>
@@ -221,29 +174,21 @@ export default function Login() {
                   <span>Memproses...</span>
                 </>
               ) : (
-                loginMode === 'admin' ? '🛡️ Masuk Admin' : 'Masuk'
+                'Masuk Admin'
               )}
             </button>
           </form>
 
-          {loginMode === 'user' && (
-            <div className="mt-6 text-center">
-              <p className="text-dark-400 text-sm">
-                Belum punya akun?{' '}
-                <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                  Daftar sekarang
-                </Link>
-              </p>
-            </div>
-          )}
-
-          {loginMode === 'admin' && (
-            <div className="mt-6 text-center">
-              <p className="text-dark-500 text-xs">
-                🔒 Hanya akun dengan role Admin yang dapat mengakses
-              </p>
-            </div>
-          )}
+          <div className="mt-6 text-center">
+            <p className="text-dark-500 text-xs">
+              Halaman ini khusus untuk Admin NoteSampah
+            </p>
+            <p className="text-dark-400 text-sm mt-4">
+              <button onClick={() => navigate('/dashboard')} className="text-primary-400 hover:text-primary-300 transition-colors">
+                Kembali ke Halaman Public
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>

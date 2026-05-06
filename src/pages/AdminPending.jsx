@@ -88,7 +88,8 @@ export default function AdminPending() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-dark-800/60 rounded-lg p-3">
                       <p className="text-xs text-dark-500 mb-1">Pelapor</p>
-                      <p className="text-sm font-medium text-dark-200">{r.profiles?.full_name || 'Unknown'}</p>
+                      <p className="text-sm font-medium text-dark-200">{r.nama_pelapor || r.profiles?.full_name || 'Tanpa Nama'}</p>
+                      {r.rt && r.rw && <p className="text-xs text-dark-500">RT {r.rt} / RW {r.rw}</p>}
                     </div>
                     <div className="bg-dark-800/60 rounded-lg p-3">
                       <p className="text-xs text-dark-500 mb-1">Berat</p>

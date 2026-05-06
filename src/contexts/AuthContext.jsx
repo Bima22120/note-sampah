@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
@@ -10,8 +10,19 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
+  const profileCacheRef = useRef({});
 
-  const fetchProfile = useCallback(async (userId) => {
+  // Fetch profile dengan cache untuk menghindari fetch berulang
+  const fetchProfile = async (userId) => {
+    if (!userId) return null;
+    
+    // Cek cache dulu
+    if (profileCacheRef.current[userId]) {
+      const cached = profileCacheRef.current[userId];
+      if (mountedRef.current) setProfile(cached);
+      return cached;
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -26,156 +37,95 @@ export function AuthProvider({ children }) {
         
         const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
-          .insert({
-            id: userId,
-            full_name: fullName,
-            role: 'user',
-          })
+          .insert({ id: userId, full_name: fullName, role: 'user' })
           .select()
           .single();
 
         if (insertError) {
-          console.error('Error creating profile:', insertError);
-          if (mountedRef.current) setProfile(null);
+          console.error('Gagal buat profile:', insertError);
           return null;
         }
+        profileCacheRef.current[userId] = newProfile;
         if (mountedRef.current) setProfile(newProfile);
         return newProfile;
       }
 
       if (error) throw error;
+      
+      profileCacheRef.current[userId] = data;
       if (mountedRef.current) setProfile(data);
       return data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Gagal fetch profile:', error);
       if (mountedRef.current) setProfile(null);
       return null;
     }
-  }, []);
+  };
 
   useEffect(() => {
     mountedRef.current = true;
 
-    const initializeAuth = async () => {
-      // Safety timer: paksa loading selesai setelah 8 detik
-      const safetyTimer = setTimeout(() => {
-        if (mountedRef.current) {
-          console.warn('Auth init safety timeout');
-          setLoading(false);
-        }
-      }, 8000);
-
-      try {
-        // Ambil session - getSession() baca dari cache localStorage
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          // Tidak ada session / error = user belum login, itu normal
-          if (mountedRef.current) {
-            setUser(null);
-            setProfile(null);
-            setLoading(false);
-          }
-          clearTimeout(safetyTimer);
-          return;
-        }
-
-        // Validasi session dari server (cek apakah token masih berlaku)
-        const { data: { user: validatedUser }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !validatedUser) {
-          // Token expired/invalid - bersihkan dan redirect ke login
-          console.warn('Token sudah tidak valid, membersihkan...');
-          try { await supabase.auth.signOut(); } catch (_) {}
-          if (mountedRef.current) {
-            setUser(null);
-            setProfile(null);
-            setLoading(false);
-          }
-          clearTimeout(safetyTimer);
-          return;
-        }
-
-        // Session valid!
-        if (mountedRef.current) {
-          setUser(validatedUser);
-          await fetchProfile(validatedUser.id);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Auth init error:', error);
-        if (mountedRef.current) {
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-        }
-      } finally {
-        clearTimeout(safetyTimer);
+    // Safety: jika setelah 10 detik loading masih true, paksa selesai
+    const safetyTimer = setTimeout(() => {
+      if (mountedRef.current && loading) {
+        console.warn('[Auth] Safety timeout - paksa loading selesai');
+        setLoading(false);
       }
-    };
+    }, 10000);
 
-    initializeAuth();
-
-    // Listen for auth changes
+    // ============================================================
+    // SATU-SATUNYA sumber kebenaran: onAuthStateChange
+    // Ini adalah best practice resmi Supabase.
+    // INITIAL_SESSION event otomatis membaca dari localStorage.
+    // Tidak perlu manual getSession() atau getUser().
+    // ============================================================
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mountedRef.current) return;
-        if (event === 'INITIAL_SESSION') return; // Sudah ditangani initializeAuth
 
-        console.log('Auth event:', event);
+        console.log('[Auth] Event:', event, '| User:', session?.user?.email || 'null');
 
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-          return;
-        }
-
-        if (event === 'TOKEN_REFRESHED') {
-          if (session?.user) setUser(session.user);
-          return;
-        }
-
-        // SIGNED_IN, USER_UPDATED, dll
         if (session?.user) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+
+          // PENTING: Gunakan setTimeout untuk fetch profile
+          // Supabase menahan lock selama callback onAuthStateChange.
+          // Jika kita panggil supabase.from() secara sinkron di sini,
+          // bisa terjadi deadlock. setTimeout(0) mendefer ke microtask berikutnya.
+          setTimeout(async () => {
+            if (!mountedRef.current) return;
+            await fetchProfile(session.user.id);
+            if (mountedRef.current) setLoading(false);
+          }, 0);
         } else {
           setUser(null);
           setProfile(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
     return () => {
       mountedRef.current = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, []);
 
   const signUp = async (email, password, fullName) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName },
-      },
+      options: { data: { full_name: fullName } },
     });
     if (error) throw error;
 
+    // Buat profile di tabel profiles
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: fullName,
-          role: 'user',
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-      }
+        .insert({ id: data.user.id, full_name: fullName, role: 'user' });
+      if (profileError) console.error('Gagal buat profile:', profileError);
     }
 
     return data;
@@ -197,6 +147,7 @@ export function AuthProvider({ children }) {
         .eq('id', data.user.id)
         .single();
       userProfile = profileData;
+      profileCacheRef.current[data.user.id] = profileData;
       if (mountedRef.current) setProfile(profileData);
     }
 
@@ -204,47 +155,36 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
-    // LANGKAH 1: Segera bersihkan state React supaya UI responsif
-    setUser(null);
-    setProfile(null);
+    // Bersihkan cache
+    profileCacheRef.current = {};
 
-    // LANGKAH 2: Sign out dari Supabase (scope: global = bersihkan server + local)
+    // Sign out dari Supabase - ini akan trigger onAuthStateChange SIGNED_OUT
+    // yang akan set user=null, profile=null, loading=false
     try {
       await supabase.auth.signOut();
     } catch (error) {
-      console.error('signOut error (diabaikan):', error);
-    }
-
-    // LANGKAH 3: Bersihkan semua sisa token di localStorage sebagai safety net
-    try {
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('sb-') || key === 'notesampah-auth')) {
-          keysToRemove.push(key);
-        }
+      console.error('signOut error:', error);
+      // Jika supabase.auth.signOut() gagal, paksa bersihkan state manual
+      if (mountedRef.current) {
+        setUser(null);
+        setProfile(null);
       }
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-    } catch (e) {
-      // Brave mungkin memblokir - abaikan
     }
   };
 
   const isAdmin = profile?.role === 'admin';
 
-  const value = {
-    user,
-    profile,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    isAdmin,
-    fetchProfile,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      loading,
+      signUp,
+      signIn,
+      signOut,
+      isAdmin,
+      fetchProfile,
+    }}>
       {children}
     </AuthContext.Provider>
   );

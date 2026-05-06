@@ -8,14 +8,13 @@ import {
   HiOutlineScale,
   HiOutlineClock,
   HiOutlineCheckCircle,
-  HiOutlineXCircle,
   HiOutlineShieldCheck,
   HiOutlineDocumentReport,
   HiOutlineTrendingUp,
 } from 'react-icons/hi';
 
 export default function Dashboard() {
-  const { profile, isAdmin, user } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, totalWeight: 0 });
   const [recentReports, setRecentReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,22 +23,17 @@ export default function Dashboard() {
     let ignore = false;
     fetchData(ignore);
     return () => { ignore = true; };
-  }, [user, isAdmin]);
+  }, [isAdmin]);
 
   const fetchData = async (ignore) => {
-    if (!user) return;
-    const safetyTimer = setTimeout(() => {
-      if (!ignore) setLoading(false);
-    }, 8000);
+    setLoading(true);
     try {
-      let query = supabase.from('waste_reports').select('*, profiles:user_id(full_name)');
+      // Ambil semua laporan untuk dashboard public/admin
+      const { data, error } = await supabase
+        .from('waste_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      // User hanya lihat miliknya, admin lihat semua
-      if (!isAdmin) {
-        query = query.eq('user_id', user.id);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
       if (error) throw error;
 
       if (!ignore) {
@@ -56,7 +50,6 @@ export default function Dashboard() {
     } catch (e) {
       console.error(e);
     } finally {
-      clearTimeout(safetyTimer);
       if (!ignore) setLoading(false);
     }
   };
@@ -74,49 +67,49 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-white">
-          {isAdmin ? '🛡️ Dashboard Admin' : `Selamat datang, ${profile?.full_name || user?.user_metadata?.full_name || 'User'}!`}
+          {isAdmin ? '🛡️ Dashboard Admin' : 'Selamat datang di NoteSampah!'}
         </h1>
         <p className="text-dark-400 mt-1">
-          {isAdmin ? 'Kelola semua laporan sampah dari sini' : 'Pantau laporan sampah Anda'}
+          {isAdmin ? 'Kelola semua laporan sampah dari sini' : 'Pantau dan catat laporan sampah warga'}
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-card p-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="glass-card p-4 sm:p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
-              <HiOutlineClipboardList className="w-5 h-5 text-blue-400" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
+              <HiOutlineClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white">{stats.total}</p>
+          <p className="text-xl sm:text-2xl font-bold text-white">{stats.total}</p>
           <p className="text-xs text-dark-500 mt-1">Total Laporan</p>
         </div>
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 sm:p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
-              <HiOutlineClock className="w-5 h-5 text-amber-400" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
+              <HiOutlineClock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-amber-400">{stats.pending}</p>
+          <p className="text-xl sm:text-2xl font-bold text-amber-400">{stats.pending}</p>
           <p className="text-xs text-dark-500 mt-1">Menunggu</p>
         </div>
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 sm:p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
-              <HiOutlineCheckCircle className="w-5 h-5 text-emerald-400" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
+              <HiOutlineCheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-emerald-400">{stats.approved}</p>
+          <p className="text-xl sm:text-2xl font-bold text-emerald-400">{stats.approved}</p>
           <p className="text-xs text-dark-500 mt-1">Disetujui</p>
         </div>
-        <div className="glass-card p-5">
+        <div className="glass-card p-4 sm:p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-purple-500/15 rounded-xl flex items-center justify-center">
-              <HiOutlineScale className="w-5 h-5 text-purple-400" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500/15 rounded-xl flex items-center justify-center">
+              <HiOutlineScale className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white">{fmtWeight(stats.totalWeight)}</p>
+          <p className="text-xl sm:text-2xl font-bold text-white">{fmtWeight(stats.totalWeight)}</p>
           <p className="text-xs text-dark-500 mt-1">Total Berat</p>
         </div>
       </div>
@@ -157,7 +150,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-white font-semibold">Buat Laporan Baru</p>
-                  <p className="text-dark-400 text-sm">Laporkan sampah yang telah ditimbang</p>
+                  <p className="text-dark-400 text-sm">Laporkan sampah tanpa perlu login</p>
                 </div>
               </div>
             </Link>
@@ -167,8 +160,8 @@ export default function Dashboard() {
                   <HiOutlineClipboardList className="w-6 h-6 text-accent-400" />
                 </div>
                 <div>
-                  <p className="text-white font-semibold">Laporan Saya</p>
-                  <p className="text-dark-400 text-sm">Lihat riwayat laporan Anda</p>
+                  <p className="text-white font-semibold">Daftar Laporan</p>
+                  <p className="text-dark-400 text-sm">Lihat semua laporan yang masuk</p>
                 </div>
               </div>
             </Link>
@@ -177,7 +170,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Reports */}
-      <div className="glass-card p-6">
+      <div className="glass-card p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <HiOutlineTrendingUp className="w-5 h-5 text-primary-400" />
@@ -187,21 +180,21 @@ export default function Dashboard() {
         {recentReports.length > 0 ? (
           <div className="space-y-3">
             {recentReports.map(r => (
-              <div key={r.id} className="flex items-center justify-between bg-dark-800/60 rounded-xl p-4">
+              <div key={r.id} className="flex items-center justify-between bg-dark-800/60 rounded-xl p-3 sm:p-4">
                 <div className="flex items-center gap-3">
                   <span className="text-lg">{r.category === 'organik' ? '🌿' : '🔧'}</span>
-                  <div>
-                    <p className="text-sm font-medium text-dark-200">
-                      {isAdmin && r.profiles?.full_name ? `${r.profiles.full_name} — ` : ''}
-                      {r.description?.substring(0, 40)}{r.description?.length > 40 ? '...' : ''}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-dark-200 truncate">
+                      {r.nama_pelapor ? `${r.nama_pelapor} — ` : ''}
+                      {r.description?.substring(0, 30)}{r.description?.length > 30 ? '...' : ''}
                     </p>
                     <p className="text-xs text-dark-500">
                       {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-dark-300">{fmtWeight(r.weight_grams)}</span>
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <span className="text-xs sm:text-sm font-medium text-dark-300">{fmtWeight(r.weight_grams)}</span>
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                     r.status === 'approved' ? 'bg-emerald-500/15 text-emerald-400' :
                     r.status === 'rejected' ? 'bg-red-500/15 text-red-400' :

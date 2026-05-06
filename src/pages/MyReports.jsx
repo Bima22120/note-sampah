@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 import { HiOutlineClipboardList, HiOutlineEye } from 'react-icons/hi';
 
 export default function MyReports() {
-  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -17,7 +16,6 @@ export default function MyReports() {
       const { data, error } = await supabase
         .from('waste_reports')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       setReports(data || []);
@@ -50,8 +48,8 @@ export default function MyReports() {
   return (
     <div className="page-enter space-y-6">
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white">Laporan Saya</h1>
-        <p className="text-dark-400 mt-1">Riwayat semua laporan sampah yang Anda buat</p>
+        <h1 className="text-2xl lg:text-3xl font-bold text-white">Daftar Laporan</h1>
+        <p className="text-dark-400 mt-1">Semua laporan sampah yang telah masuk</p>
       </div>
 
       {reports.length > 0 ? (
@@ -121,7 +119,7 @@ export default function MyReports() {
             <HiOutlineClipboardList className="w-8 h-8 text-dark-500" />
           </div>
           <p className="text-dark-300 text-lg mb-1">Belum ada laporan</p>
-          <p className="text-dark-500 text-sm">Mulai buat laporan pertama Anda</p>
+          <p className="text-dark-500 text-sm">Belum ada laporan sampah yang masuk</p>
         </div>
       )}
     </div>
