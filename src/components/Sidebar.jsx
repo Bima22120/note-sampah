@@ -13,6 +13,7 @@ import {
 } from 'react-icons/hi';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import logoGambar from '../assets/oasesongo.jpg';
 
 export default function Sidebar() {
   const { profile, signOut, isAdmin } = useAuth();
@@ -58,9 +59,15 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-dark-700/50">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 ${isAdmin ? 'bg-gradient-to-br from-amber-400 to-red-600' : 'bg-gradient-to-br from-primary-400 to-primary-600'} rounded-xl flex items-center justify-center shadow-lg ${isAdmin ? 'shadow-amber-500/30' : 'shadow-primary-500/30'}`}>
-            <span className="text-white font-bold text-lg">{isAdmin ? '🛡️' : '♻'}</span>
-          </div>
+          {isAdmin ? (
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 overflow-hidden shrink-0">
+              <img src={logoGambar} alt="Logo NoteSampah" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30 shrink-0">
+              <span className="text-white font-bold text-lg">♻</span>
+            </div>
+          )}
           <div>
             <h1 className="text-lg font-bold text-white tracking-tight">NoteSampah</h1>
             <p className="text-xs text-dark-500">{isAdmin ? 'Panel Admin' : 'Kelola Sampah Cerdas'}</p>
