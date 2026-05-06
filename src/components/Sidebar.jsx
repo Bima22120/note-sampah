@@ -13,7 +13,7 @@ import {
 import { useState } from 'react';
 
 export default function Sidebar() {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -75,10 +75,10 @@ export default function Sidebar() {
       <div className="p-4 border-t border-dark-700/50">
         <div className="flex items-center gap-3 mb-3 px-2">
           <div className={`w-9 h-9 ${isAdmin ? 'bg-gradient-to-br from-amber-400 to-red-600' : 'bg-gradient-to-br from-accent-400 to-accent-600'} rounded-lg flex items-center justify-center text-white font-semibold text-sm`}>
-            {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+            {(profile?.full_name || user?.user_metadata?.full_name || 'U').charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-dark-200 truncate">{profile?.full_name || 'User'}</p>
+            <p className="text-sm font-medium text-dark-200 truncate">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</p>
             <p className={`text-xs capitalize ${isAdmin ? 'text-amber-400 font-semibold' : 'text-dark-500'}`}>
               {isAdmin ? '🛡️ Admin' : '👤 User'}
             </p>

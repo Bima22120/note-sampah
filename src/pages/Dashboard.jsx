@@ -74,7 +74,7 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-white">
-          {isAdmin ? '🛡️ Dashboard Admin' : `Selamat datang, ${profile?.full_name || 'User'}!`}
+          {isAdmin ? '🛡️ Dashboard Admin' : `Selamat datang, ${profile?.full_name || user?.user_metadata?.full_name || 'User'}!`}
         </h1>
         <p className="text-dark-400 mt-1">
           {isAdmin ? 'Kelola semua laporan sampah dari sini' : 'Pantau laporan sampah Anda'}

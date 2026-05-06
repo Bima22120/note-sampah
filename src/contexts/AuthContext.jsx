@@ -90,6 +90,7 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
+        if (event === 'INITIAL_SESSION') return; // Sudah ditangani oleh initializeAuth
         
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -161,10 +162,21 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    setUser(null);
-    setProfile(null);
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error dari Supabase saat sign out:', error);
+    } finally {
+      // PAKSA bersihkan state lokal (Sangat penting untuk browser Brave yang sering memblokir localStorage)
+      setUser(null);
+      setProfile(null);
+      
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
   };
 
   const isAdmin = profile?.role === 'admin';
