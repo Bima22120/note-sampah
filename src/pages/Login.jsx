@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import toast from 'react-hot-toast';
+import logoGambar from '../src/oasesongo.jpg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -106,8 +107,12 @@ export default function Login() {
       <div className="w-full max-w-md relative animate-fade-in z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-red-600 shadow-amber-500/30 rounded-2xl shadow-2xl mb-4 transition-all duration-500">
-            <span className="text-3xl"></span>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-red-600 shadow-amber-500/30 rounded-2xl shadow-2xl mb-4 transition-all duration-500 overflow-hidden">
+            <img 
+              src={logoGambar} 
+              alt="Logo NoteSampah" 
+              className="w-full h-full object-cover" 
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Login Admin</h1>
           <p className="text-dark-400 text-sm sm:text-base">NoteSampah - Panel Manajemen</p>
