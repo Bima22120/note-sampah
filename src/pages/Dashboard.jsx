@@ -15,7 +15,7 @@ import {
 
 export default function Dashboard() {
   const { profile, isAdmin } = useAuth();
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, totalWeight: 0 });
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, totalWeight: 0, totalOrganik: 0, totalAnorganik: 0 });
   const [recentReports, setRecentReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +44,8 @@ export default function Dashboard() {
           approved: reports.filter(r => r.status === 'approved').length,
           rejected: reports.filter(r => r.status === 'rejected').length,
           totalWeight: reports.filter(r => r.status === 'approved').reduce((sum, r) => sum + r.weight_grams, 0),
+          totalOrganik: reports.filter(r => r.status === 'approved' && r.category === 'organik').reduce((sum, r) => sum + r.weight_grams, 0),
+          totalAnorganik: reports.filter(r => r.status === 'approved' && r.category === 'anorganik').reduce((sum, r) => sum + r.weight_grams, 0),
         });
         setRecentReports(reports.slice(0, 5));
       }
@@ -96,21 +98,30 @@ export default function Dashboard() {
         </div>
         <div className="glass-card p-4 sm:p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
-              <HiOutlineCheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-            </div>
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-emerald-400">{stats.approved}</p>
-          <p className="text-xs text-dark-500 mt-1">Disetujui</p>
-        </div>
-        <div className="glass-card p-4 sm:p-5">
-          <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500/15 rounded-xl flex items-center justify-center">
               <HiOutlineScale className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-white">{fmtWeight(stats.totalWeight)}</p>
-          <p className="text-xs text-dark-500 mt-1">Total Berat</p>
+          <p className="text-xs text-dark-500 mt-1">Total Berat Semua</p>
+        </div>
+        <div className="glass-card p-4 sm:p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/15 rounded-xl flex items-center justify-center">
+              <HiOutlineScale className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
+            </div>
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-green-400">{fmtWeight(stats.totalOrganik)}</p>
+          <p className="text-xs text-dark-500 mt-1">Total Organik</p>
+        </div>
+        <div className="glass-card p-4 sm:p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
+              <HiOutlineScale className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+            </div>
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-blue-400">{fmtWeight(stats.totalAnorganik)}</p>
+          <p className="text-xs text-dark-500 mt-1">Total Anorganik</p>
         </div>
       </div>
 
@@ -189,7 +200,7 @@ export default function Dashboard() {
                       {r.description?.substring(0, 30)}{r.description?.length > 30 ? '...' : ''}
                     </p>
                     <p className="text-xs text-dark-500">
-                      {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </p>
                   </div>
                 </div>

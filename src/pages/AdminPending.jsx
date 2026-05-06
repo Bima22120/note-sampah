@@ -99,7 +99,7 @@ export default function AdminPending() {
                     <div className="bg-dark-800/60 rounded-lg p-3">
                       <p className="text-xs text-dark-500 mb-1">Tanggal</p>
                       <p className="text-sm text-dark-200">
-                        {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </p>
                     </div>
                   </div>

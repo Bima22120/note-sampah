@@ -100,12 +100,8 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-dark-950 relative overflow-hidden px-4 sm:px-6 lg:px-8">
-      {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse-slow transition-colors duration-700" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-80 sm:h-80 bg-red-500/10 rounded-full blur-3xl animate-pulse-slow transition-colors duration-700" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-primary-500/5 rounded-full blur-3xl" />
-      </div>
+      {/* Optimized background */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-amber-900/20 via-dark-950 to-dark-950" />
 
       <div className="w-full max-w-md relative animate-fade-in z-10">
         {/* Logo */}

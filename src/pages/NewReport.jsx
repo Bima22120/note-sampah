@@ -16,8 +16,8 @@ export default function NewReport() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!namaPelapor.trim()) { toast.error('Nama wajib diisi!'); return; }
-    if (!rt.trim() || !rw.trim()) { toast.error('RT dan RW wajib diisi!'); return; }
+    if (!namaPelapor.trim() || !/^[a-zA-Z\s]+$/.test(namaPelapor)) { toast.error('Nama wajib diisi dan hanya boleh huruf!'); return; }
+    if (rt.trim().length !== 2 || rw.trim().length !== 2) { toast.error('RT dan RW wajib 2 angka (contoh: 01)!'); return; }
     if (!category) { toast.error('Pilih kategori sampah!'); return; }
     if (!weightGrams || Number(weightGrams) <= 0) { toast.error('Masukkan berat yang valid!'); return; }
     setLoading(true);
@@ -59,7 +59,7 @@ export default function NewReport() {
             <div>
               <label htmlFor="namaPelapor" className="input-label">Nama Lengkap</label>
               <input id="namaPelapor" type="text" value={namaPelapor}
-                onChange={(e) => setNamaPelapor(e.target.value)}
+                onChange={(e) => setNamaPelapor(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                 placeholder="Masukkan nama lengkap Anda" className="input-field" required />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -67,7 +67,7 @@ export default function NewReport() {
                 <label htmlFor="rt" className="input-label flex items-center gap-2">
                   <HiOutlineLocationMarker className="w-4 h-4" /> RT
                 </label>
-                <input id="rt" type="text" value={rt} maxLength={3}
+                <input id="rt" type="text" value={rt} maxLength={2}
                   onChange={(e) => setRt(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="Contoh: 01" className="input-field" required />
               </div>
@@ -75,7 +75,7 @@ export default function NewReport() {
                 <label htmlFor="rw" className="input-label flex items-center gap-2">
                   <HiOutlineLocationMarker className="w-4 h-4" /> RW
                 </label>
-                <input id="rw" type="text" value={rw} maxLength={3}
+                <input id="rw" type="text" value={rw} maxLength={2}
                   onChange={(e) => setRw(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="Contoh: 02" className="input-field" required />
               </div>
