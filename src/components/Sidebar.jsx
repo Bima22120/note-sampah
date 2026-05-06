@@ -106,7 +106,7 @@ export default function Sidebar() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-dark-200 truncate">{profile?.full_name || 'Admin'}</p>
                 <p className="text-xs capitalize text-amber-400 font-semibold">
-                  🛡️ Admin
+                  Admin
                 </p>
               </div>
             </div>
