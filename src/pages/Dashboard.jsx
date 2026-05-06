@@ -69,7 +69,7 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-white">
-          {isAdmin ? '🛡️ Dashboard Admin' : 'Selamat datang di NoteSampah!'}
+          {isAdmin ? 'Dashboard Admin' : 'Selamat datang di NoteSampah!'}
         </h1>
         <p className="text-dark-400 mt-1">
           {isAdmin ? 'Kelola semua laporan sampah dari sini' : 'Pantau dan catat laporan sampah warga'}
