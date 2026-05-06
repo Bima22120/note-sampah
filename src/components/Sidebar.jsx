@@ -11,15 +11,35 @@ import {
   HiOutlineX,
 } from 'react-icons/hi';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function Sidebar() {
   const { user, profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
+  const handleSignOut = async (e) => {
+    // Cegah double-click dan propagation
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (signingOut) return;
+    setSigningOut(true);
+
+    try {
+      await signOut();
+      toast.success('Berhasil keluar!');
+      // Force navigation ke login
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast.error('Gagal keluar, mencoba paksa...');
+      // Force redirect bahkan jika signOut gagal
+      navigate('/login', { replace: true });
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   const userLinks = [
@@ -86,10 +106,21 @@ export default function Sidebar() {
         </div>
         <button
           onClick={handleSignOut}
-          className="nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+          disabled={signingOut}
+          className={`nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 ${signingOut ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+          style={{ pointerEvents: signingOut ? 'none' : 'auto' }}
         >
-          <HiOutlineLogout className="w-5 h-5" />
-          <span>Keluar</span>
+          {signingOut ? (
+            <>
+              <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+              <span>Keluar...</span>
+            </>
+          ) : (
+            <>
+              <HiOutlineLogout className="w-5 h-5" />
+              <span>Keluar</span>
+            </>
+          )}
         </button>
       </div>
     </div>

@@ -15,6 +15,8 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
     );
   }
 
+  // Jika tidak ada user ATAU tidak ada profile, redirect ke login
+  // Ini menangani kasus dimana signOut sudah clear state tapi navigate belum selesai
   if (!user) {
     return <Navigate to="/login" replace />;
   }

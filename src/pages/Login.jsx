@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff, HiOutlineShieldCheck, HiOutlineUser } from 'react-icons/hi';
@@ -12,6 +12,7 @@ export default function Login() {
   const [loginMode, setLoginMode] = useState('user'); // 'user' or 'admin'
   const { signIn, user, profile } = useAuth();
   const navigate = useNavigate();
+  const formRef = useRef(null);
 
   // Redirect ke dashboard jika sudah login
   useEffect(() => {
@@ -20,8 +21,51 @@ export default function Login() {
     }
   }, [user, profile, navigate]);
 
+  // Deteksi autofill dari browser setelah mount
+  // Browser Brave / Chrome sering mengisi field sebelum React state ter-update
+  useEffect(() => {
+    const checkAutofill = () => {
+      if (!formRef.current) return;
+      const emailInput = formRef.current.querySelector('#login-email');
+      const passwordInput = formRef.current.querySelector('#login-password');
+      
+      if (emailInput && emailInput.value && !email) {
+        setEmail(emailInput.value);
+      }
+      if (passwordInput && passwordInput.value && !password) {
+        setPassword(passwordInput.value);
+      }
+    };
+
+    // Cek beberapa kali karena autofill bisa terjadi dengan delay
+    const timers = [
+      setTimeout(checkAutofill, 100),
+      setTimeout(checkAutofill, 500),
+      setTimeout(checkAutofill, 1000),
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Ambil value langsung dari DOM sebagai fallback jika state belum ter-update (autofill)
+    let submitEmail = email;
+    let submitPassword = password;
+    
+    if (formRef.current) {
+      const emailInput = formRef.current.querySelector('#login-email');
+      const passwordInput = formRef.current.querySelector('#login-password');
+      if (emailInput?.value) submitEmail = emailInput.value;
+      if (passwordInput?.value) submitPassword = passwordInput.value;
+    }
+
+    if (!submitEmail || !submitPassword) {
+      toast.error('Masukkan email dan password.');
+      return;
+    }
+
     setLoading(true);
 
     // Timeout 10 detik untuk mencegah loading terus-menerus
@@ -31,7 +75,7 @@ export default function Login() {
 
     try {
       const { profile } = await Promise.race([
-        signIn(email, password),
+        signIn(submitEmail, submitPassword),
         timeoutPromise
       ]);
 
@@ -53,11 +97,13 @@ export default function Login() {
     } catch (error) {
       if (error.message && error.message.includes('timeout')) {
         // Hapus token yang nyangkut di localStorage jika terjadi timeout saat login
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-            localStorage.removeItem(key);
-          }
-        });
+        try {
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-') || key === 'notesampah-auth') {
+              localStorage.removeItem(key);
+            }
+          });
+        } catch (_) {}
         toast.error('Sesi sebelumnya nyangkut. Sistem telah dibersihkan, silakan klik Masuk sekali lagi.');
       } else {
         toast.error(error.message || 'Gagal masuk. Periksa email dan password.');
@@ -120,17 +166,19 @@ export default function Login() {
             {loginMode === 'admin' ? 'Masuk sebagai Admin' : 'Masuk ke Akun'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="input-label">Email</label>
+              <label htmlFor="login-email" className="input-label">Email</label>
               <div className="relative">
                 <HiOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
                 <div>
                   <input
-                    id="email"
+                    id="login-email"
+                    name="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onInput={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
                     className="input-field pl-12"
                     autoComplete="username"
@@ -141,15 +189,17 @@ export default function Login() {
             </div>
 
             <div>
-              <label htmlFor="password" className="input-label">Password</label>
+              <label htmlFor="login-password" className="input-label">Password</label>
               <div className="relative">
                 <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
                 <div>
                   <input
-                    id="password"
+                    id="login-password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onInput={(e) => setPassword(e.target.value)}
                     placeholder="Masukkan password"
                     className="input-field pl-12 pr-12"
                     autoComplete="current-password"
