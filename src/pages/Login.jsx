@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import logoGambar from '../src/oasesongo.jpg';
+import logoGambar from '../assets/oasesongo.jpg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
