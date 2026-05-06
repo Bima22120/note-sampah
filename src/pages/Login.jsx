@@ -22,7 +22,6 @@ export default function Login() {
   }, [user, profile, navigate]);
 
   // Deteksi autofill dari browser setelah mount
-  // Browser Brave / Chrome sering mengisi field sebelum React state ter-update
   useEffect(() => {
     const checkAutofill = () => {
       if (!formRef.current) return;
@@ -37,7 +36,6 @@ export default function Login() {
       }
     };
 
-    // Cek beberapa kali karena autofill bisa terjadi dengan delay
     const timers = [
       setTimeout(checkAutofill, 100),
       setTimeout(checkAutofill, 500),
@@ -68,16 +66,8 @@ export default function Login() {
 
     setLoading(true);
 
-    // Timeout 10 detik untuk mencegah loading terus-menerus
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Koneksi timeout (terlalu lama). Silakan muat ulang halaman.')), 10000)
-    );
-
     try {
-      const { profile } = await Promise.race([
-        signIn(submitEmail, submitPassword),
-        timeoutPromise
-      ]);
+      const { profile } = await signIn(submitEmail, submitPassword);
 
       // Cek role sesuai mode login
       if (loginMode === 'admin' && profile?.role !== 'admin') {
@@ -95,18 +85,18 @@ export default function Login() {
       toast.success(`Berhasil masuk sebagai ${loginMode === 'admin' ? 'Admin' : 'User'}!`);
       navigate('/dashboard');
     } catch (error) {
-      if (error.message && error.message.includes('timeout')) {
-        // Hapus token yang nyangkut di localStorage jika terjadi timeout saat login
-        try {
-          Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('sb-') || key === 'notesampah-auth') {
-              localStorage.removeItem(key);
-            }
-          });
-        } catch (_) {}
-        toast.error('Sesi sebelumnya nyangkut. Sistem telah dibersihkan, silakan klik Masuk sekali lagi.');
+      console.error('Login error:', error);
+      
+      // Tampilkan pesan error yang jelas tanpa menghapus token
+      const msg = error.message || '';
+      if (msg.includes('Invalid login credentials')) {
+        toast.error('Email atau password salah.');
+      } else if (msg.includes('Email not confirmed')) {
+        toast.error('Email belum diverifikasi. Cek inbox email Anda.');
+      } else if (msg.includes('Network') || msg.includes('fetch')) {
+        toast.error('Gagal terhubung ke server. Periksa koneksi internet.');
       } else {
-        toast.error(error.message || 'Gagal masuk. Periksa email dan password.');
+        toast.error(msg || 'Gagal masuk. Periksa email dan password.');
       }
     } finally {
       setLoading(false);

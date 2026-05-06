@@ -10,7 +10,6 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
-  const signingOutRef = useRef(false);
 
   const fetchProfile = useCallback(async (userId) => {
     try {
@@ -54,54 +53,24 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Fungsi untuk membersihkan semua token auth dari localStorage
-  const clearAuthTokens = useCallback(() => {
-    try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('sb-') || key === 'notesampah-auth') {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (e) {
-      console.warn('Gagal membersihkan token:', e);
-    }
-  }, []);
-
-  // Fungsi untuk reset state ke kondisi logged out
-  const resetAuthState = useCallback(() => {
-    if (mountedRef.current) {
-      setUser(null);
-      setProfile(null);
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     mountedRef.current = true;
 
     const initializeAuth = async () => {
-      // Safety timer: paksa loading selesai setelah 8 detik apa pun yang terjadi
+      // Safety timer: paksa loading selesai setelah 8 detik
       const safetyTimer = setTimeout(() => {
-        if (mountedRef.current && !signingOutRef.current) {
-          console.warn('Auth init safety timeout - forcing load complete');
+        if (mountedRef.current) {
+          console.warn('Auth init safety timeout');
           setLoading(false);
         }
       }, 8000);
 
       try {
-        // Step 1: Ambil session dari cache localStorage
+        // Ambil session - getSession() baca dari cache localStorage
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          clearAuthTokens();
-          resetAuthState();
-          clearTimeout(safetyTimer);
-          return;
-        }
-
-        if (!session) {
-          // Tidak ada session, user belum login
+        if (sessionError || !session) {
+          // Tidak ada session / error = user belum login, itu normal
           if (mountedRef.current) {
             setUser(null);
             setProfile(null);
@@ -111,35 +80,37 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // Step 2: VALIDASI session dengan server (penting untuk Brave yang sering corrupt cache)
+        // Validasi session dari server (cek apakah token masih berlaku)
         const { data: { user: validatedUser }, error: userError } = await supabase.auth.getUser();
 
         if (userError || !validatedUser) {
-          // Session cache ada tapi sudah invalid/expired
-          console.warn('Session invalid, clearing tokens...');
-          clearAuthTokens();
-          // Coba sign out secara resmi untuk bersihkan server-side juga
-          try { await supabase.auth.signOut({ scope: 'local' }); } catch (_) {}
-          resetAuthState();
+          // Token expired/invalid - bersihkan dan redirect ke login
+          console.warn('Token sudah tidak valid, membersihkan...');
+          try { await supabase.auth.signOut(); } catch (_) {}
+          if (mountedRef.current) {
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+          }
           clearTimeout(safetyTimer);
           return;
         }
 
-        // Session valid, set user dan fetch profile
+        // Session valid!
         if (mountedRef.current) {
           setUser(validatedUser);
           await fetchProfile(validatedUser.id);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        clearAuthTokens();
-        resetAuthState();
-      } finally {
-        clearTimeout(safetyTimer);
+        console.error('Auth init error:', error);
         if (mountedRef.current) {
+          setUser(null);
+          setProfile(null);
           setLoading(false);
         }
+      } finally {
+        clearTimeout(safetyTimer);
       }
     };
 
@@ -149,43 +120,28 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mountedRef.current) return;
-        
-        // Skip INITIAL_SESSION karena sudah ditangani oleh initializeAuth
-        if (event === 'INITIAL_SESSION') return;
+        if (event === 'INITIAL_SESSION') return; // Sudah ditangani initializeAuth
 
         console.log('Auth event:', event);
 
         if (event === 'SIGNED_OUT') {
-          // User keluar - bersihkan semua state
-          resetAuthState();
-          return;
-        }
-
-        if (event === 'TOKEN_REFRESHED') {
-          // Token di-refresh berhasil, update user tapi jangan re-fetch profile
-          if (session?.user) {
-            setUser(session.user);
-          }
-          return;
-        }
-
-        if (event === 'SIGNED_IN') {
-          // User baru login
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchProfile(session.user.id);
-          } else {
-            setProfile(null);
-          }
+          setUser(null);
+          setProfile(null);
           setLoading(false);
           return;
         }
 
-        // Event lainnya (USER_UPDATED, etc)
-        setUser(session?.user ?? null);
+        if (event === 'TOKEN_REFRESHED') {
+          if (session?.user) setUser(session.user);
+          return;
+        }
+
+        // SIGNED_IN, USER_UPDATED, dll
         if (session?.user) {
+          setUser(session.user);
           await fetchProfile(session.user.id);
         } else {
+          setUser(null);
           setProfile(null);
         }
         setLoading(false);
@@ -196,10 +152,9 @@ export function AuthProvider({ children }) {
       mountedRef.current = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile, clearAuthTokens, resetAuthState]);
+  }, [fetchProfile]);
 
   const signUp = async (email, password, fullName) => {
-    // 1. Daftarkan user di Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -209,7 +164,6 @@ export function AuthProvider({ children }) {
     });
     if (error) throw error;
 
-    // 2. Buat profile di tabel profiles (tidak pakai trigger)
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
@@ -221,8 +175,6 @@ export function AuthProvider({ children }) {
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
-        // Jangan throw error di sini agar user tetap terdaftar
-        // Profile bisa dibuat ulang nanti jika gagal
       }
     }
 
@@ -252,27 +204,30 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
-    // Tandai sedang sign out supaya safety timer tidak mengganggu
-    signingOutRef.current = true;
-
-    // LANGKAH 1: Segera bersihkan state React (ini yang membuat UI langsung responsif)
+    // LANGKAH 1: Segera bersihkan state React supaya UI responsif
     setUser(null);
     setProfile(null);
 
-    // LANGKAH 2: Bersihkan localStorage (critical untuk Brave)
-    clearAuthTokens();
-
-    // LANGKAH 3: Beritahu Supabase server (dengan timeout agar tidak hang)
+    // LANGKAH 2: Sign out dari Supabase (scope: global = bersihkan server + local)
     try {
-      const signOutPromise = supabase.auth.signOut({ scope: 'local' });
-      const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000));
-      await Promise.race([signOutPromise, timeoutPromise]);
+      await supabase.auth.signOut();
     } catch (error) {
-      console.error('Error dari Supabase saat sign out:', error);
-      // Tidak masalah jika gagal - state lokal sudah dibersihkan
+      console.error('signOut error (diabaikan):', error);
     }
 
-    signingOutRef.current = false;
+    // LANGKAH 3: Bersihkan semua sisa token di localStorage sebagai safety net
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key === 'notesampah-auth')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    } catch (e) {
+      // Brave mungkin memblokir - abaikan
+    }
   };
 
   const isAdmin = profile?.role === 'admin';

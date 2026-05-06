@@ -29,20 +29,17 @@ export default function Register() {
 
     setLoading(true);
 
-    // Timeout 10 detik untuk mencegah loading terus-menerus
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Koneksi timeout (terlalu lama). Silakan cek internet Anda.')), 10000)
-    );
-
     try {
-      await Promise.race([
-        signUp(email, password, fullName),
-        timeoutPromise
-      ]);
+      await signUp(email, password, fullName);
       toast.success('Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
       navigate('/login');
     } catch (error) {
-      toast.error(error.message || 'Gagal mendaftar. Coba lagi.');
+      const msg = error.message || '';
+      if (msg.includes('already registered')) {
+        toast.error('Email sudah terdaftar. Silakan login.');
+      } else {
+        toast.error(msg || 'Gagal mendaftar. Coba lagi.');
+      }
     } finally {
       setLoading(false);
     }
