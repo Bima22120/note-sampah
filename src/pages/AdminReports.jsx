@@ -133,19 +133,40 @@ export default function AdminReports() {
       'RT': r.rt || '-',
       'RW': r.rw || '-',
       'Kategori': r.category === 'organik' ? 'Organik' : 'Anorganik',
-      'Berat (gram)': r.weight_grams,
-      'Berat (kg)': (r.weight_grams / 1000).toFixed(2),
+      'Organik (kg)': r.category === 'organik' ? (r.weight_grams / 1000).toFixed(2) : '0',
+      'Anorganik (kg)': r.category === 'anorganik' ? (r.weight_grams / 1000).toFixed(2) : '0',
+      'Total Berat (kg)': (r.weight_grams / 1000).toFixed(2),
       'Keterangan': r.description,
       'Status': r.status === 'approved' ? 'Disetujui' : r.status === 'rejected' ? 'Ditolak' : 'Menunggu',
       'Catatan Admin': r.admin_notes || '-',
       'Tanggal Laporan': new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
+    const wsData = [...data];
+    const totalOrganik = filtered.reduce((sum, r) => sum + (r.category === 'organik' ? r.weight_grams : 0), 0);
+    const totalAnorganik = filtered.reduce((sum, r) => sum + (r.category === 'anorganik' ? r.weight_grams : 0), 0);
+    const totalWeight = filtered.reduce((sum, r) => sum + r.weight_grams, 0);
+
+    wsData.push({
+      'No': '',
+      'Pelapor': 'TOTAL KESELURUHAN',
+      'RT': '',
+      'RW': '',
+      'Kategori': '',
+      'Organik (kg)': (totalOrganik / 1000).toFixed(2),
+      'Anorganik (kg)': (totalAnorganik / 1000).toFixed(2),
+      'Total Berat (kg)': (totalWeight / 1000).toFixed(2),
+      'Keterangan': '',
+      'Status': '',
+      'Catatan Admin': '',
+      'Tanggal Laporan': '',
+    });
+
+    const ws = XLSX.utils.json_to_sheet(wsData);
     
     // Auto-fit column widths
-    const colWidths = Object.keys(data[0] || {}).map(key => ({
-      wch: Math.max(key.length, ...data.map(r => String(r[key] || '').length)) + 2
+    const colWidths = Object.keys(wsData[0] || {}).map(key => ({
+      wch: Math.max(key.length, ...wsData.map(r => String(r[key] || '').length)) + 2
     }));
     ws['!cols'] = colWidths;
 
