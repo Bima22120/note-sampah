@@ -11,6 +11,8 @@ import {
   HiOutlineShieldCheck,
   HiOutlineDocumentReport,
   HiOutlineTrendingUp,
+  HiChevronDown,
+  HiChevronUp,
 } from 'react-icons/hi';
 import logoGambar from '../assets/oasesongo.jpg';
 import compostImg from '../assets/compost.png';
@@ -21,6 +23,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0, totalWeight: 0, totalOrganik: 0, totalAnorganik: 0 });
   const [recentReports, setRecentReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRecentReportsOpen, setIsRecentReportsOpen] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -89,61 +92,61 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="glass-card p-3 sm:p-4 md:p-5">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <div className="glass-card p-2.5 sm:p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
               <HiOutlineClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 dark:text-blue-400" />
             </div>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold theme-text-primary">{stats.total}</p>
-          <p className="text-xs theme-text-faint mt-1">Total Laporan</p>
+          <p className="text-base sm:text-xl md:text-2xl font-bold theme-text-primary">{stats.total}</p>
+          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Laporan</p>
         </div>
-        <div className="glass-card p-3 sm:p-4 md:p-5">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
+        <div className="glass-card p-2.5 sm:p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
               <HiOutlineClock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 dark:text-amber-400" />
             </div>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-amber-500 dark:text-amber-400">{stats.pending}</p>
-          <p className="text-xs theme-text-faint mt-1">Menunggu</p>
+          <p className="text-base sm:text-xl md:text-2xl font-bold text-amber-500 dark:text-amber-400">{stats.pending}</p>
+          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Menunggu</p>
         </div>
-        <div className="glass-card p-3 sm:p-4 md:p-5">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500/15 rounded-xl flex items-center justify-center">
+        <div className="glass-card p-2.5 sm:p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-purple-500/15 rounded-xl flex items-center justify-center">
               <HiOutlineScale className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 dark:text-purple-400" />
             </div>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold theme-text-primary">{fmtWeight(stats.totalWeight)}</p>
-          <p className="text-xs theme-text-faint mt-1">Total Berat</p>
+          <p className="text-base sm:text-xl md:text-2xl font-bold theme-text-primary">{fmtWeight(stats.totalWeight)}</p>
+          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Berat</p>
         </div>
-        <div className="glass-card p-3 sm:p-4 md:p-5">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
+        <div className="glass-card p-2.5 sm:p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
               <HiOutlineCheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 dark:text-emerald-400" />
             </div>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-500 dark:text-emerald-400">{stats.approved}</p>
-          <p className="text-xs theme-text-faint mt-1">Disetujui</p>
+          <p className="text-base sm:text-xl md:text-2xl font-bold text-emerald-500 dark:text-emerald-400">{stats.approved}</p>
+          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Disetujui</p>
         </div>
         {/* Organik & Anorganik weight cards */}
-        <div className="glass-card p-3 sm:p-4 md:p-5">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/15 rounded-xl flex items-center justify-center">
-              <img src={compostImg} alt="Organik" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+        <div className="glass-card p-2.5 sm:p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-green-500/15 rounded-xl flex items-center justify-center">
+              <img src={compostImg} alt="Organik" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
             </div>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-500 dark:text-green-400">{fmtWeight(stats.totalOrganik)}</p>
-          <p className="text-xs theme-text-faint mt-1">Total Organik</p>
+          <p className="text-base sm:text-xl md:text-2xl font-bold text-green-500 dark:text-green-400">{fmtWeight(stats.totalOrganik)}</p>
+          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Organik</p>
         </div>
-        <div className="glass-card p-3 sm:p-4 md:p-5">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
-              <img src={repurposeImg} alt="Anorganik" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+        <div className="glass-card p-2.5 sm:p-4 md:p-5">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
+              <img src={repurposeImg} alt="Anorganik" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
             </div>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-500 dark:text-blue-400">{fmtWeight(stats.totalAnorganik)}</p>
-          <p className="text-xs theme-text-faint mt-1">Total Anorganik</p>
+          <p className="text-base sm:text-xl md:text-2xl font-bold text-blue-500 dark:text-blue-400">{fmtWeight(stats.totalAnorganik)}</p>
+          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Anorganik</p>
         </div>
       </div>
 
@@ -202,50 +205,61 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Recent Reports */}
-      <div className="glass-card p-4 sm:p-5 md:p-6">
-        <div className="flex items-center justify-between mb-4">
+      {/* Recent Reports (Collapsible on Mobile) */}
+      <div className="glass-card overflow-hidden">
+        <button 
+          onClick={() => setIsRecentReportsOpen(!isRecentReportsOpen)}
+          className="w-full flex items-center justify-between p-4 sm:p-5 md:p-6 text-left hover:bg-slate-500/5 transition-colors"
+        >
           <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2 theme-text-primary">
             <HiOutlineTrendingUp className="w-5 h-5 text-primary-500 dark:text-primary-400" />
             Laporan Terbaru
           </h2>
-        </div>
-        {recentReports.length > 0 ? (
-          <div className="space-y-2 sm:space-y-3">
-            {recentReports.map(r => (
-              <div key={r.id} className="flex items-center justify-between rounded-xl p-3 sm:p-4 theme-bg-input">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    r.category === 'organik' ? 'bg-green-500/15' : 'bg-blue-500/15'
-                  }`}>
-                    <img src={getCategoryImage(r.category)} alt={r.category} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium truncate theme-text-secondary">
-                      {r.nama_pelapor ? `${r.nama_pelapor} — ` : ''}
-                      {r.description?.substring(0, 30)}{r.description?.length > 30 ? '...' : ''}
-                    </p>
-                    <p className="text-xs theme-text-faint">
-                      {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
-                  <span className="text-xs sm:text-sm font-medium theme-text-muted">{fmtWeight(r.weight_grams)}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    r.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' :
-                    r.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
-                    'bg-amber-500/15 text-amber-500 dark:text-amber-400'
-                  }`}>
-                    {r.status === 'approved' ? '✓' : r.status === 'rejected' ? '✕' : '⏳'}
-                  </span>
-                </div>
-              </div>
-            ))}
+          <div className="p-1 rounded-lg bg-slate-500/10 theme-text-muted">
+            {isRecentReportsOpen ? <HiChevronUp className="w-5 h-5" /> : <HiChevronDown className="w-5 h-5" />}
           </div>
-        ) : (
-          <p className="theme-text-faint text-center py-8">Belum ada laporan</p>
-        )}
+        </button>
+
+        <div className={`transition-all duration-300 ease-in-out ${isRecentReportsOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="p-4 sm:p-5 md:p-6 pt-0 border-t border-slate-500/10">
+            {recentReports.length > 0 ? (
+              <div className="space-y-2 sm:space-y-3 mt-3">
+                {recentReports.map(r => (
+                  <div key={r.id} className="flex items-center justify-between rounded-xl p-3 sm:p-4 theme-bg-input">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                        r.category === 'organik' ? 'bg-green-500/15' : 'bg-blue-500/15'
+                      }`}>
+                        <img src={getCategoryImage(r.category)} alt={r.category} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-medium truncate theme-text-secondary">
+                          {r.nama_pelapor ? `${r.nama_pelapor} — ` : ''}
+                          {r.description?.substring(0, 30)}{r.description?.length > 30 ? '...' : ''}
+                        </p>
+                        <p className="text-[10px] sm:text-xs theme-text-faint truncate">
+                          {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+                      <span className="text-xs sm:text-sm font-medium theme-text-muted whitespace-nowrap">{fmtWeight(r.weight_grams)}</span>
+                      <span className={`text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full font-medium ${
+                        r.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' :
+                        r.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
+                        'bg-amber-500/15 text-amber-500 dark:text-amber-400'
+                      }`}>
+                        {r.status === 'approved' ? '✓' : r.status === 'rejected' ? '✕' : '⏳'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="theme-text-faint text-center py-8 text-sm">Belum ada laporan</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
