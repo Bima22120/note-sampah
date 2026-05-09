@@ -8,6 +8,8 @@ import {
 } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
+import compostImg from '../assets/compost.png';
+import repurposeImg from '../assets/repurpose.png';
 
 export default function AdminReports() {
   const { user } = useAuth();
@@ -188,37 +190,37 @@ export default function AdminReports() {
   );
 
   return (
-    <div className="page-enter space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="page-enter space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Semua Laporan</h1>
-          <p className="text-dark-400 mt-1">{filtered.length} laporan ditemukan</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">Semua Laporan</h1>
+          <p className="theme-text-muted mt-1 text-sm">{filtered.length} laporan ditemukan</p>
         </div>
         <button onClick={downloadExcel} disabled={filtered.length === 0}
-          className="btn-primary flex items-center gap-2 !bg-emerald-600 hover:!bg-emerald-700 disabled:opacity-50">
+          className="btn-primary flex items-center justify-center gap-2 !bg-emerald-600 hover:!bg-emerald-700 disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto">
           <HiOutlineDownload className="w-5 h-5" />
           Download Excel
         </button>
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+      <div className="glass-card p-3 sm:p-4">
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 theme-text-faint" />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Cari pelapor, keterangan..." className="input-field pl-10 !py-2.5 text-sm" />
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-              className="input-field !py-2.5 text-sm !pr-8 cursor-pointer">
+              className="input-field !py-2.5 text-sm !pr-8 cursor-pointer flex-1 sm:flex-none">
               <option value="all">Semua Status</option>
               <option value="pending">Menunggu</option>
               <option value="approved">Disetujui</option>
               <option value="rejected">Ditolak</option>
             </select>
             <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-              className="input-field !py-2.5 text-sm !pr-8 cursor-pointer">
+              className="input-field !py-2.5 text-sm !pr-8 cursor-pointer flex-1 sm:flex-none">
               <option value="all">Semua Kategori</option>
               <option value="organik">Organik</option>
               <option value="anorganik">Anorganik</option>
@@ -227,18 +229,18 @@ export default function AdminReports() {
         </div>
       </div>
 
-      {/* Reports Table */}
+      {/* Reports List */}
       {filtered.length > 0 ? (
         <div className="space-y-3">
           {filtered.map(r => (
-            <div key={r.id} className="glass-card p-5 animate-fade-in">
+            <div key={r.id} className="glass-card p-4 sm:p-5 animate-fade-in">
               {editingReport === r.id ? (
                 /* Edit Mode */
-                <div className="space-y-4">
-                  <p className="text-white font-semibold text-sm">✏️ Edit Laporan</p>
+                <div className="space-y-3 sm:space-y-4">
+                  <p className="font-semibold text-sm theme-text-primary">✏️ Edit Laporan</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-xs text-dark-500 mb-1 block">Kategori</label>
+                      <label className="text-xs theme-text-faint mb-1 block">Kategori</label>
                       <select value={editForm.category} onChange={e => setEditForm(f => ({...f, category: e.target.value}))}
                         className="input-field !py-2 text-sm">
                         <option value="organik">Organik</option>
@@ -246,12 +248,12 @@ export default function AdminReports() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs text-dark-500 mb-1 block">Berat (gram)</label>
+                      <label className="text-xs theme-text-faint mb-1 block">Berat (gram)</label>
                       <input type="number" value={editForm.weight_grams} onChange={e => setEditForm(f => ({...f, weight_grams: e.target.value}))}
                         className="input-field !py-2 text-sm" />
                     </div>
                     <div>
-                      <label className="text-xs text-dark-500 mb-1 block">Status</label>
+                      <label className="text-xs theme-text-faint mb-1 block">Status</label>
                       <select value={editForm.status} onChange={e => setEditForm(f => ({...f, status: e.target.value}))}
                         className="input-field !py-2 text-sm">
                         <option value="pending">Menunggu</option>
@@ -261,12 +263,12 @@ export default function AdminReports() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-dark-500 mb-1 block">Keterangan</label>
+                    <label className="text-xs theme-text-faint mb-1 block">Keterangan</label>
                     <textarea value={editForm.description} onChange={e => setEditForm(f => ({...f, description: e.target.value}))}
                       className="input-field !py-2 text-sm resize-none" rows={2} />
                   </div>
                   <div>
-                    <label className="text-xs text-dark-500 mb-1 block">Catatan Admin</label>
+                    <label className="text-xs theme-text-faint mb-1 block">Catatan Admin</label>
                     <input type="text" value={editForm.admin_notes} onChange={e => setEditForm(f => ({...f, admin_notes: e.target.value}))}
                       className="input-field !py-2 text-sm" placeholder="Tambahkan catatan..." />
                   </div>
@@ -277,56 +279,60 @@ export default function AdminReports() {
                 </div>
               ) : (
                 /* View Mode */
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0 ${
+                <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-center justify-between">
+                  <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${
                       r.category === 'organik' ? 'bg-green-500/15' : 'bg-blue-500/15'
                     }`}>
-                      {r.category === 'organik' ? '🌿' : '🔧'}
+                      <img
+                        src={r.category === 'organik' ? compostImg : repurposeImg}
+                        alt={r.category}
+                        className="w-5 h-5 sm:w-7 sm:h-7 object-contain"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-dark-200 font-medium text-sm">
+                        <p className="font-medium text-xs sm:text-sm theme-text-secondary">
                           {r.nama_pelapor || r.profiles?.full_name || 'Tanpa Nama'} {r.rt && r.rw ? `(RT ${r.rt}/RW ${r.rw})` : ''}
                         </p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          r.status === 'approved' ? 'bg-emerald-500/15 text-emerald-400' :
-                          r.status === 'rejected' ? 'bg-red-500/15 text-red-400' :
-                          'bg-amber-500/15 text-amber-400'
+                          r.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' :
+                          r.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
+                          'bg-amber-500/15 text-amber-500 dark:text-amber-400'
                         }`}>
                           {r.status === 'approved' ? '✓ Disetujui' : r.status === 'rejected' ? '✕ Ditolak' : '⏳ Menunggu'}
                         </span>
                       </div>
-                      <p className="text-dark-500 text-xs mt-1 truncate">{r.description}</p>
-                      <p className="text-dark-600 text-xs mt-0.5">{fmtDate(r.created_at)} • {fmtWeight(r.weight_grams)} • {r.category}</p>
+                      <p className="theme-text-faint text-xs mt-0.5 truncate">{r.description}</p>
+                      <p className="text-xs mt-0.5 theme-text-faint">{fmtDate(r.created_at)} • {fmtWeight(r.weight_grams)} • {r.category}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-2 shrink-0 self-end sm:self-auto">
                     {r.status === 'pending' && (
                       <>
                         <button onClick={() => handleStatusChange(r.id, 'approved')} title="Setujui"
-                          className="p-2 text-emerald-400 hover:bg-emerald-500/15 rounded-lg transition-all">
-                          <HiOutlineCheck className="w-5 h-5" />
+                          className="p-1.5 sm:p-2 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500/15 rounded-lg transition-all">
+                          <HiOutlineCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                         <button onClick={() => handleStatusChange(r.id, 'rejected')} title="Tolak"
-                          className="p-2 text-red-400 hover:bg-red-500/15 rounded-lg transition-all">
-                          <HiOutlineX className="w-5 h-5" />
+                          className="p-1.5 sm:p-2 text-red-500 dark:text-red-400 hover:bg-red-500/15 rounded-lg transition-all">
+                          <HiOutlineX className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       </>
                     )}
                     <button onClick={() => handleEdit(r)} title="Edit"
-                      className="p-2 text-blue-400 hover:bg-blue-500/15 rounded-lg transition-all">
-                      <HiOutlinePencil className="w-5 h-5" />
+                      className="p-1.5 sm:p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-500/15 rounded-lg transition-all">
+                      <HiOutlinePencil className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                     {deleteConfirm === r.id ? (
                       <div className="flex items-center gap-1">
-                        <button onClick={() => handleDelete(r.id)} className="text-xs bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700">Hapus!</button>
-                        <button onClick={() => setDeleteConfirm(null)} className="text-xs bg-dark-700 text-dark-300 px-3 py-1.5 rounded-lg hover:bg-dark-600">Batal</button>
+                        <button onClick={() => handleDelete(r.id)} className="text-xs bg-red-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-red-700">Hapus!</button>
+                        <button onClick={() => setDeleteConfirm(null)} className="text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg theme-bg-input theme-text-muted hover:theme-text-primary">Batal</button>
                       </div>
                     ) : (
                       <button onClick={() => setDeleteConfirm(r.id)} title="Hapus"
-                        className="p-2 text-red-400 hover:bg-red-500/15 rounded-lg transition-all">
-                        <HiOutlineTrash className="w-5 h-5" />
+                        className="p-1.5 sm:p-2 text-red-500 dark:text-red-400 hover:bg-red-500/15 rounded-lg transition-all">
+                        <HiOutlineTrash className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     )}
                   </div>
@@ -336,20 +342,20 @@ export default function AdminReports() {
           ))}
         </div>
       ) : (
-        <div className="glass-card p-12 text-center">
-          <div className="w-16 h-16 bg-dark-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <HiOutlineDocumentReport className="w-8 h-8 text-dark-500" />
+        <div className="glass-card p-8 sm:p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 theme-bg-input">
+            <HiOutlineDocumentReport className="w-8 h-8 theme-text-faint" />
           </div>
           {errorState ? (
             <>
-              <p className="text-red-400 text-lg mb-1">Koneksi Terputus</p>
-              <p className="text-dark-400 text-sm mb-4">Gagal mengambil data dari server. Sesi mungkin macet.</p>
+              <p className="text-red-500 dark:text-red-400 text-lg mb-1">Koneksi Terputus</p>
+              <p className="theme-text-muted text-sm mb-4">Gagal mengambil data dari server. Sesi mungkin macet.</p>
               <button onClick={() => window.location.reload()} className="btn-primary px-6">Muat Ulang Halaman</button>
             </>
           ) : (
             <>
-              <p className="text-dark-300 text-lg mb-1">Tidak ada laporan</p>
-              <p className="text-dark-500 text-sm">Sesuaikan filter untuk melihat laporan</p>
+              <p className="theme-text-muted text-lg mb-1">Tidak ada laporan</p>
+              <p className="theme-text-faint text-sm">Sesuaikan filter untuk melihat laporan</p>
             </>
           )}
         </div>

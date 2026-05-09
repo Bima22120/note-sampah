@@ -4,9 +4,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   CSS Custom Properties for Light/Dark Theme
+   Using CSS variables so all components adapt automatically.
+   ============================================================ */
+:root {
+  /* Light mode (default when .light class is on <html>) */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #f1f5f9;
+  --bg-overlay: rgba(0, 0, 0, 0.3);
+  --bg-sidebar: #ffffff;
+  --bg-gradient-from: #e2e8f0;
+  --bg-gradient-via: #f8fafc;
+  --bg-gradient-to: #f8fafc;
+  --border-color: #e2e8f0;
+  --border-color-light: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-inverted: #ffffff;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+}
+
+.dark {
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.9);
+  --bg-card-hover: #1e293b;
+  --bg-input: rgba(30, 41, 59, 0.8);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --bg-sidebar: rgba(15, 23, 42, 0.95);
+  --bg-gradient-from: #0f172a;
+  --bg-gradient-via: #020617;
+  --bg-gradient-to: #020617;
+  --border-color: rgba(51, 65, 85, 0.5);
+  --border-color-light: rgba(71, 85, 105, 0.5);
+  --text-primary: #f1f5f9;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --text-inverted: #0f172a;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #475569;
+  --scrollbar-thumb-hover: #64748b;
+}
+
 @layer base {
   body {
-    @apply bg-dark-950 text-dark-100 font-sans antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    @apply font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   ::-webkit-scrollbar {
@@ -14,27 +72,41 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-dark-900;
+    background: var(--scrollbar-track);
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-dark-600 rounded-full;
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-dark-500;
+    background: var(--scrollbar-thumb-hover);
   }
 }
 
 @layer components {
+  /* ====== Glass Card ====== */
   .glass-card {
-    @apply bg-dark-800/90 border border-dark-700/50 rounded-2xl shadow-lg;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .glass-card-hover {
-    @apply glass-card transition-all duration-200 hover:bg-dark-800 hover:border-dark-600/50 hover:shadow-xl hover:-translate-y-0.5;
+    @apply glass-card;
+    transition: all 0.2s ease;
+  }
+  .glass-card-hover:hover {
+    background-color: var(--bg-card-hover);
+    border-color: var(--border-color-light);
+    box-shadow: 0 20px 25px -5px var(--shadow-color);
+    transform: translateY(-2px);
   }
 
+  /* ====== Buttons ====== */
   .btn-primary {
     @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-6 py-3 rounded-xl
            hover:from-primary-400 hover:to-primary-500 active:from-primary-600 active:to-primary-700
@@ -43,9 +115,15 @@
   }
 
   .btn-secondary {
-    @apply bg-dark-700/50 text-dark-200 font-medium px-6 py-3 rounded-xl border border-dark-600/50
-           hover:bg-dark-600/50 hover:text-white transition-all duration-200
+    background-color: var(--bg-input);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    @apply font-medium px-6 py-3 rounded-xl transition-all duration-200
            disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary:hover {
+    background-color: var(--bg-card-hover);
+    color: var(--text-primary);
   }
 
   .btn-danger {
@@ -62,39 +140,72 @@
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* ====== Input Fields ====== */
   .input-field {
-    @apply w-full bg-dark-800/80 border border-dark-600/50 rounded-xl px-4 py-3 text-dark-100
-           placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50
-           focus:border-primary-500/50 transition-all duration-200;
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+  .input-field::placeholder {
+    color: var(--text-faint);
+  }
+  .input-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    border-color: rgba(34, 197, 94, 0.5);
   }
 
   .input-label {
-    @apply block text-sm font-medium text-dark-300 mb-2;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
   }
 
+  /* ====== Badges ====== */
   .badge-pending {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-           bg-amber-500/20 text-amber-400 border border-amber-500/30;
+           bg-amber-500/20 text-amber-500 border border-amber-500/30;
+  }
+  .dark .badge-pending {
+    @apply text-amber-400;
   }
 
   .badge-approved {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-           bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+           bg-emerald-500/20 text-emerald-600 border border-emerald-500/30;
+  }
+  .dark .badge-approved {
+    @apply text-emerald-400;
   }
 
   .badge-rejected {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-           bg-red-500/20 text-red-400 border border-red-500/30;
+           bg-red-500/20 text-red-600 border border-red-500/30;
+  }
+  .dark .badge-rejected {
+    @apply text-red-400;
   }
 
   .badge-organik {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-           bg-green-500/20 text-green-400 border border-green-500/30;
+           bg-green-500/20 text-green-600 border border-green-500/30;
+  }
+  .dark .badge-organik {
+    @apply text-green-400;
   }
 
   .badge-anorganik {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-           bg-blue-500/20 text-blue-400 border border-blue-500/30;
+           bg-blue-500/20 text-blue-600 border border-blue-500/30;
+  }
+  .dark .badge-anorganik {
+    @apply text-blue-400;
   }
 
   .stat-card {
@@ -106,13 +217,55 @@
     @apply absolute top-0 left-0 right-0 h-1 bg-gradient-to-r;
   }
 
+  /* ====== Navigation Link ====== */
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-dark-400 font-medium
-           hover:bg-dark-800/50 hover:text-dark-100 transition-all duration-200;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .nav-link:hover {
+    background-color: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+  .nav-link.active {
+    @apply bg-primary-500/10 text-primary-500 border border-primary-500/20;
+  }
+  .dark .nav-link.active {
+    @apply text-primary-400;
   }
 
-  .nav-link.active {
-    @apply bg-primary-500/10 text-primary-400 border border-primary-500/20;
+  /* ====== Theme-aware text utilities ====== */
+  .theme-text-primary {
+    color: var(--text-primary);
+  }
+  .theme-text-secondary {
+    color: var(--text-secondary);
+  }
+  .theme-text-muted {
+    color: var(--text-muted);
+  }
+  .theme-text-faint {
+    color: var(--text-faint);
+  }
+  .theme-bg-primary {
+    background-color: var(--bg-primary);
+  }
+  .theme-bg-secondary {
+    background-color: var(--bg-secondary);
+  }
+  .theme-bg-card {
+    background-color: var(--bg-card);
+  }
+  .theme-bg-input {
+    background-color: var(--bg-input);
+  }
+  .theme-border {
+    border-color: var(--border-color);
   }
 }
 
@@ -142,4 +295,30 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ====== Theme toggle animation ====== */
+.theme-toggle-icon {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-toggle-icon:hover {
+  transform: rotate(30deg) scale(1.1);
+}
+
+/* ====== Category image styling ====== */
+.category-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+/* ====== Select dropdown styling for light mode ====== */
+.light select.input-field option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+.dark select.input-field option {
+  background-color: #1e293b;
+  color: #f1f5f9;
 }

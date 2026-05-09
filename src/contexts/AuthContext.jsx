@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
@@ -154,7 +154,13 @@ export function AuthProvider({ children }) {
     return { ...data, profile: userProfile };
   };
 
-  const signOut = async () => {
+  // ============================================================
+  // SECURITY FIX: signOut sekarang membersihkan semua token auth
+  // dari localStorage secara agresif, termasuk semua key sb-*.
+  // Ini mencegah session zombie yang bisa digunakan oleh orang
+  // lain yang mengakses browser setelah admin logout.
+  // ============================================================
+  const signOut = useCallback(async () => {
     // Bersihkan cache
     profileCacheRef.current = {};
 
@@ -164,13 +170,29 @@ export function AuthProvider({ children }) {
       await supabase.auth.signOut();
     } catch (error) {
       console.error('signOut error:', error);
-      // Jika supabase.auth.signOut() gagal, paksa bersihkan state manual
-      if (mountedRef.current) {
-        setUser(null);
-        setProfile(null);
-      }
     }
-  };
+
+    // SECURITY: Paksa bersihkan semua token auth dari localStorage
+    // meskipun supabase.auth.signOut() berhasil, sebagai safety net
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key === 'notesampah-auth-token')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    } catch (e) {
+      // Abaikan jika localStorage tidak tersedia
+    }
+
+    // Paksa bersihkan state
+    if (mountedRef.current) {
+      setUser(null);
+      setProfile(null);
+    }
+  }, []);
 
   const isAdmin = profile?.role === 'admin';
 

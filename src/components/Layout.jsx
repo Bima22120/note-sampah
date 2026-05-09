@@ -1,11 +1,21 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Layout() {
+  const { isDark } = useTheme();
+
   return (
-    <div className="flex min-h-screen bg-dark-950">
-      {/* Optimized background */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-dark-900 via-dark-950 to-dark-950" />
+    <div className="flex min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      {/* Background gradient */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: isDark
+            ? 'radial-gradient(ellipse at top right, var(--bg-gradient-from), var(--bg-gradient-via), var(--bg-gradient-to))'
+            : 'radial-gradient(ellipse at top right, #e0e7ff 0%, #f8fafc 40%, #f8fafc 100%)',
+        }}
+      />
 
       <Sidebar />
 

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { HiOutlineScale, HiOutlineTag, HiOutlineDocumentText, HiOutlineUser, HiOutlineLocationMarker } from 'react-icons/hi';
 import toast from 'react-hot-toast';
+import compostImg from '../assets/compost.png';
+import repurposeImg from '../assets/repurpose.png';
 
 export default function NewReport() {
   const navigate = useNavigate();
@@ -45,16 +47,16 @@ export default function NewReport() {
   return (
     <div className="page-enter max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white">Laporan Sampah Baru</h1>
-        <p className="text-dark-400 mt-1">Isi form berikut untuk melaporkan sampah yang telah ditimbang</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">Laporan Sampah Baru</h1>
+        <p className="theme-text-muted mt-1 text-sm sm:text-base">Isi form berikut untuk melaporkan sampah yang telah ditimbang</p>
       </div>
 
-      <div className="glass-card p-6 sm:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="glass-card p-5 sm:p-6 md:p-8">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           {/* Identitas Pelapor */}
-          <div className="bg-dark-800/50 p-5 rounded-xl border border-dark-700/50 space-y-4">
-            <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
-              <HiOutlineUser className="w-5 h-5 text-primary-400" /> Data Diri
+          <div className="p-4 sm:p-5 rounded-xl border space-y-4 theme-bg-input" style={{ borderColor: 'var(--border-color)' }}>
+            <h3 className="text-base sm:text-lg font-semibold mb-2 flex items-center gap-2 theme-text-primary">
+              <HiOutlineUser className="w-5 h-5 text-primary-500 dark:text-primary-400" /> Data Diri
             </h3>
             <div>
               <label htmlFor="namaPelapor" className="input-label">Nama Lengkap</label>
@@ -62,7 +64,7 @@ export default function NewReport() {
                 onChange={(e) => setNamaPelapor(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                 placeholder="Masukkan nama lengkap Anda" className="input-field" required />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label htmlFor="rt" className="input-label flex items-center gap-2">
                   <HiOutlineLocationMarker className="w-4 h-4" /> RT
@@ -89,16 +91,22 @@ export default function NewReport() {
             </label>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button type="button" onClick={() => setCategory('organik')}
-                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'organik' ? 'border-green-500 bg-green-500/10' : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'}`}>
-                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🌿</div>
-                <p className={`font-semibold ${category === 'organik' ? 'text-green-400' : 'text-dark-200'} text-sm sm:text-base`}>Organik</p>
-                <p className="text-xs text-dark-500 mt-1 hidden sm:block">Sisa makanan, daun, kayu, dll</p>
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'organik' ? 'border-green-500 bg-green-500/10' : 'border-transparent hover:border-green-500/30'}`}
+                style={{ backgroundColor: category === 'organik' ? undefined : 'var(--bg-input)' }}>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 mb-1 sm:mb-2">
+                  <img src={compostImg} alt="Organik" className="w-full h-full object-contain" />
+                </div>
+                <p className={`font-semibold ${category === 'organik' ? 'text-green-500 dark:text-green-400' : 'theme-text-secondary'} text-sm sm:text-base`}>Organik</p>
+                <p className="text-xs theme-text-faint mt-1 hidden sm:block">Sisa makanan, daun, kayu, dll</p>
               </button>
               <button type="button" onClick={() => setCategory('anorganik')}
-                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'anorganik' ? 'border-blue-500 bg-blue-500/10' : 'border-dark-700/50 bg-dark-800/50 hover:border-dark-600'}`}>
-                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🔧</div>
-                <p className={`font-semibold ${category === 'anorganik' ? 'text-blue-400' : 'text-dark-200'} text-sm sm:text-base`}>Anorganik</p>
-                <p className="text-xs text-dark-500 mt-1 hidden sm:block">Plastik, logam, kaca, dll</p>
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 text-left ${category === 'anorganik' ? 'border-blue-500 bg-blue-500/10' : 'border-transparent hover:border-blue-500/30'}`}
+                style={{ backgroundColor: category === 'anorganik' ? undefined : 'var(--bg-input)' }}>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 mb-1 sm:mb-2">
+                  <img src={repurposeImg} alt="Anorganik" className="w-full h-full object-contain" />
+                </div>
+                <p className={`font-semibold ${category === 'anorganik' ? 'text-blue-500 dark:text-blue-400' : 'theme-text-secondary'} text-sm sm:text-base`}>Anorganik</p>
+                <p className="text-xs theme-text-faint mt-1 hidden sm:block">Plastik, logam, kaca, dll</p>
               </button>
             </div>
           </div>
@@ -112,11 +120,11 @@ export default function NewReport() {
               <input id="weight" type="number" min="1" step="1" value={weightGrams}
                 onChange={(e) => setWeightGrams(e.target.value)}
                 placeholder="Contoh: 500" className="input-field pr-16" required />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-500 text-sm font-medium">gram</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium theme-text-faint">gram</span>
             </div>
             {weightGrams && (
-              <p className="text-sm text-dark-500 mt-2">
-                ≈ <span className="text-primary-400 font-medium">{weightKg} kg</span>
+              <p className="text-sm theme-text-faint mt-2">
+                ≈ <span className="text-primary-500 dark:text-primary-400 font-medium">{weightKg} kg</span>
               </p>
             )}
           </div>
@@ -134,14 +142,20 @@ export default function NewReport() {
 
           {/* Preview */}
           {category && weightGrams && (
-            <div className="bg-dark-800/80 rounded-xl p-4 border border-dark-700/50">
-              <p className="text-xs font-semibold text-dark-400 uppercase tracking-wider mb-3">Ringkasan Laporan</p>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><p className="text-dark-500">Nama</p><p className="text-dark-200 font-medium truncate">{namaPelapor || '-'}</p></div>
-                <div><p className="text-dark-500">RT / RW</p><p className="text-dark-200 font-medium">{rt || '-'} / {rw || '-'}</p></div>
-                <div><p className="text-dark-500">Kategori</p><p className="text-dark-200 font-medium capitalize">{category === 'organik' ? '🌿 Organik' : '🔧 Anorganik'}</p></div>
-                <div><p className="text-dark-500">Berat</p><p className="text-dark-200 font-medium">{Number(weightGrams).toLocaleString('id-ID')} gram ({weightKg} kg)</p></div>
-                <div className="col-span-2"><p className="text-dark-500">Status</p><span className="badge-pending">⏳ Pending</span></div>
+            <div className="rounded-xl p-4 border theme-bg-input" style={{ borderColor: 'var(--border-color)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3 theme-text-muted">Ringkasan Laporan</p>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
+                <div><p className="theme-text-faint">Nama</p><p className="font-medium truncate theme-text-secondary">{namaPelapor || '-'}</p></div>
+                <div><p className="theme-text-faint">RT / RW</p><p className="font-medium theme-text-secondary">{rt || '-'} / {rw || '-'}</p></div>
+                <div>
+                  <p className="theme-text-faint">Kategori</p>
+                  <p className="font-medium capitalize theme-text-secondary flex items-center gap-1">
+                    <img src={category === 'organik' ? compostImg : repurposeImg} alt={category} className="w-4 h-4 object-contain inline" />
+                    {category === 'organik' ? ' Organik' : ' Anorganik'}
+                  </p>
+                </div>
+                <div><p className="theme-text-faint">Berat</p><p className="font-medium theme-text-secondary">{Number(weightGrams).toLocaleString('id-ID')} gram ({weightKg} kg)</p></div>
+                <div className="col-span-2"><p className="theme-text-faint">Status</p><span className="badge-pending">⏳ Pending</span></div>
               </div>
             </div>
           )}

@@ -8,7 +8,7 @@ import './index.css'
 // Ini dijalankan sekali saat versi baru di-deploy untuk fresh start.
 // Ubah versi angka di bawah setiap kali perlu force-clear.
 // ============================================================================
-const AUTH_VERSION = 'v3';
+const AUTH_VERSION = 'v4';
 const versionKey = 'notesampah-auth-version';
 try {
   if (localStorage.getItem(versionKey) !== AUTH_VERSION) {

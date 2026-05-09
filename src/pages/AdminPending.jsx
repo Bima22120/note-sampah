@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { HiOutlineCheck, HiOutlineX, HiOutlineClock } from 'react-icons/hi';
 import toast from 'react-hot-toast';
+import compostImg from '../assets/compost.png';
+import repurposeImg from '../assets/repurpose.png';
 
 export default function AdminPending() {
   const { user } = useAuth();
@@ -62,58 +64,63 @@ export default function AdminPending() {
   return (
     <div className="page-enter space-y-6">
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white">Persetujuan Laporan</h1>
-        <p className="text-dark-400 mt-1">Tinjau dan setujui laporan sampah yang masuk</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">Persetujuan Laporan</h1>
+        <p className="theme-text-muted mt-1 text-sm sm:text-base">Tinjau dan setujui laporan sampah yang masuk</p>
       </div>
 
       {reports.length > 0 ? (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm text-dark-400">
-            <HiOutlineClock className="w-5 h-5 text-amber-400" />
+          <div className="flex items-center gap-2 text-sm theme-text-muted">
+            <HiOutlineClock className="w-5 h-5 text-amber-500 dark:text-amber-400" />
             <span>{reports.length} laporan menunggu persetujuan</span>
           </div>
 
           {reports.map((r) => (
-            <div key={r.id} className="glass-card p-6 animate-fade-in">
-              <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+            <div key={r.id} className="glass-card p-4 sm:p-6 animate-fade-in">
+              <div className="flex flex-col lg:flex-row lg:items-start gap-4 sm:gap-6">
                 {/* Report Info */}
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex-1 space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     <span className={r.category === 'organik' ? 'badge-organik' : 'badge-anorganik'}>
-                      {r.category === 'organik' ? '🌿 Organik' : '🔧 Anorganik'}
+                      <img
+                        src={r.category === 'organik' ? compostImg : repurposeImg}
+                        alt={r.category}
+                        className="w-4 h-4 object-contain mr-1 inline"
+                      />
+                      {r.category === 'organik' ? 'Organik' : 'Anorganik'}
                     </span>
                     <span className="badge-pending">⏳ Pending</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-dark-800/60 rounded-lg p-3">
-                      <p className="text-xs text-dark-500 mb-1">Pelapor</p>
-                      <p className="text-sm font-medium text-dark-200">{r.nama_pelapor || r.profiles?.full_name || 'Tanpa Nama'}</p>
-                      {r.rt && r.rw && <p className="text-xs text-dark-500">RT {r.rt} / RW {r.rw}</p>}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="rounded-lg p-3 theme-bg-input">
+                      <p className="text-xs theme-text-faint mb-1">Pelapor</p>
+                      <p className="text-sm font-medium theme-text-secondary">{r.nama_pelapor || r.profiles?.full_name || 'Tanpa Nama'}</p>
+                      {r.rt && r.rw && <p className="text-xs theme-text-faint">RT {r.rt} / RW {r.rw}</p>}
                     </div>
-                    <div className="bg-dark-800/60 rounded-lg p-3">
-                      <p className="text-xs text-dark-500 mb-1">Berat</p>
-                      <p className="text-sm font-bold text-white">{fmt(r.weight_grams)}</p>
-                      <p className="text-xs text-dark-500">{r.weight_grams.toLocaleString('id-ID')} gram</p>
+                    <div className="rounded-lg p-3 theme-bg-input">
+                      <p className="text-xs theme-text-faint mb-1">Berat</p>
+                      <p className="text-sm font-bold theme-text-primary">{fmt(r.weight_grams)}</p>
+                      <p className="text-xs theme-text-faint">{r.weight_grams.toLocaleString('id-ID')} gram</p>
                     </div>
-                    <div className="bg-dark-800/60 rounded-lg p-3">
-                      <p className="text-xs text-dark-500 mb-1">Tanggal</p>
-                      <p className="text-sm text-dark-200">
+                    <div className="rounded-lg p-3 theme-bg-input">
+                      <p className="text-xs theme-text-faint mb-1">Tanggal</p>
+                      <p className="text-sm theme-text-secondary">
                         {new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-xs text-dark-500 mb-1">Keterangan</p>
-                    <p className="text-sm text-dark-300 bg-dark-800/40 rounded-lg p-3">{r.description}</p>
+                    <p className="text-xs theme-text-faint mb-1">Keterangan</p>
+                    <p className="text-sm theme-text-muted rounded-lg p-3 theme-bg-input">{r.description}</p>
                   </div>
                 </div>
 
                 {/* Action Panel */}
                 <div className="lg:w-72 space-y-3 shrink-0">
                   <div>
-                    <label className="text-xs font-medium text-dark-400 mb-1 block">Catatan Admin (opsional)</label>
+                    <label className="text-xs font-medium theme-text-muted mb-1 block">Catatan Admin (opsional)</label>
                     <textarea
                       value={notes[r.id] || ''}
                       onChange={(e) => setNotes(prev => ({ ...prev, [r.id]: e.target.value }))}
@@ -144,12 +151,12 @@ export default function AdminPending() {
           ))}
         </div>
       ) : (
-        <div className="glass-card p-12 text-center">
+        <div className="glass-card p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-emerald-500/15 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <HiOutlineCheck className="w-8 h-8 text-emerald-400" />
+            <HiOutlineCheck className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <p className="text-dark-300 text-lg mb-1">Semua laporan telah diproses!</p>
-          <p className="text-dark-500 text-sm">Tidak ada laporan yang menunggu persetujuan</p>
+          <p className="theme-text-muted text-lg mb-1">Semua laporan telah diproses!</p>
+          <p className="theme-text-faint text-sm">Tidak ada laporan yang menunggu persetujuan</p>
         </div>
       )}
     </div>
