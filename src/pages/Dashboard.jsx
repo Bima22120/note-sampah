@@ -78,11 +78,11 @@ export default function Dashboard() {
       <div>
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center gap-3 theme-text-primary">
           {isAdmin && (
-            <img 
-              src={logoGambar} 
-              alt="Logo NoteSampah" 
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover" 
-            />
+            // <img 
+            //   src={logoGambar} 
+            //   alt="Logo NoteSampah" 
+            //   className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover" 
+            // />
           )}
           {isAdmin ? 'Dashboard Admin' : 'Selamat datang di NoteSampah!'}
         </h1>
