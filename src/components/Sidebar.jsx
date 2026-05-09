@@ -64,7 +64,7 @@ export default function Sidebar() {
       <div className="px-6 pb-6 pt-16 lg:p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
         <div className="flex items-center gap-3">
           {isAdmin ? (
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 overflow-hidden shrink-0">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
               <img src={logoGambar} alt="Logo NoteSampah" className="w-full h-full object-cover" />
             </div>
           ) : (
