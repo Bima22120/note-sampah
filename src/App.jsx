@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import NewReport from './pages/NewReport';
 import MyReports from './pages/MyReports';
@@ -49,8 +50,9 @@ function App() {
           <AuthProvider>
             <ThemedToaster />
             <Routes>
-              {/* Public auth route for admin only */}
+              {/* Public auth routes */}
               <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Layout for all main pages */}
               <Route element={<Layout />}>

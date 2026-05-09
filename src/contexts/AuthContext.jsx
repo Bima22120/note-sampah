@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
   const profileCacheRef = useRef({});
+  const isRecoveryRef = useRef(false);
 
   // Fetch profile dengan cache untuk menghindari fetch berulang
   const fetchProfile = async (userId) => {
@@ -85,8 +86,25 @@ export function AuthProvider({ children }) {
 
         console.log('[Auth] Event:', event, '| User:', session?.user?.email || 'null');
 
+        // Track jika ini adalah recovery session (reset password)
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('[Auth] PASSWORD_RECOVERY detected - skip profile check');
+          isRecoveryRef.current = true;
+          if (session?.user) {
+            setUser(session.user);
+          }
+          setLoading(false);
+          return;
+        }
+
         if (session?.user) {
           setUser(session.user);
+
+          // Jika ini recovery session, jangan fetch profile (tidak perlu)
+          if (isRecoveryRef.current) {
+            setLoading(false);
+            return;
+          }
 
           // PENTING: Gunakan setTimeout untuk fetch profile
           // Supabase menahan lock selama callback onAuthStateChange.
@@ -100,6 +118,7 @@ export function AuthProvider({ children }) {
         } else {
           setUser(null);
           setProfile(null);
+          isRecoveryRef.current = false;
           setLoading(false);
         }
       }
