@@ -88,6 +88,7 @@ export default function Sidebar() {
           <NavLink
             key={link.to}
             to={link.to}
+            end={link.to === '/reports'}
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
               `nav-link ${isActive ? 'active' : ''}`
