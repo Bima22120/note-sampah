@@ -100,7 +100,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-base sm:text-xl md:text-2xl font-bold theme-text-primary">{stats.total}</p>
-          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Laporan</p>
+          <p className="text-[10px] sm:text-xs mt-0.5 truncate">Total Laporan</p>
         </div>
         <div className="glass-card p-2.5 sm:p-4 md:p-5">
           <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
@@ -109,7 +109,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-base sm:text-xl md:text-2xl font-bold text-amber-500 dark:text-amber-400">{stats.pending}</p>
-          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Menunggu</p>
+          <p className="text-[10px] sm:text-xs mt-0.5 truncate">Menunggu</p>
         </div>
         <div className="glass-card p-2.5 sm:p-4 md:p-5">
           <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
@@ -118,7 +118,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-base sm:text-xl md:text-2xl font-bold theme-text-primary">{fmtWeight(stats.totalWeight)}</p>
-          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Berat</p>
+          <p className="text-[10px] sm:text-xs mt-0.5 truncate">Total Berat</p>
         </div>
         <div className="glass-card p-2.5 sm:p-4 md:p-5">
           <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
@@ -127,7 +127,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-base sm:text-xl md:text-2xl font-bold text-emerald-500 dark:text-emerald-400">{stats.approved}</p>
-          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Disetujui</p>
+          <p className="text-[10px] sm:text-xs mt-0.5 truncate">Disetujui</p>
         </div>
         {/* Organik & Anorganik weight cards */}
         <div className="glass-card p-2.5 sm:p-4 md:p-5">
@@ -137,7 +137,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-base sm:text-xl md:text-2xl font-bold text-green-500 dark:text-green-400">{fmtWeight(stats.totalOrganik)}</p>
-          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Organik</p>
+          <p className="text-[10px] sm:text-xs mt-0.5 truncate">Total Organik</p>
         </div>
         <div className="glass-card p-2.5 sm:p-4 md:p-5">
           <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
@@ -146,7 +146,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-base sm:text-xl md:text-2xl font-bold text-blue-500 dark:text-blue-400">{fmtWeight(stats.totalAnorganik)}</p>
-          <p className="text-[10px] sm:text-xs theme-text-faint mt-0.5 truncate">Total Anorganik</p>
+          <p className="text-[10px] sm:text-xs mt-0.5 truncate">Total Anorganik</p>
         </div>
       </div>
 
@@ -256,7 +256,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="theme-text-faint text-center py-8 text-sm">Belum ada laporan</p>
+              <p className=" text-center py-8 text-sm">Belum ada laporan</p>
             )}
           </div>
         </div>
