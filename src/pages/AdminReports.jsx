@@ -211,21 +211,28 @@ export default function AdminReports() {
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Cari pelapor, keterangan..." className="input-field pl-10 !py-2.5 text-sm" />
           </div>
-          <div className="flex gap-2 sm:gap-3">
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-              className="input-field !py-2.5 text-sm !pr-8 cursor-pointer flex-1 sm:flex-none">
-              <option value="all">Semua Status</option>
-              <option value="pending">Menunggu</option>
-              <option value="approved">Disetujui</option>
-              <option value="rejected">Ditolak</option>
-            </select>
-            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-              className="input-field !py-2.5 text-sm !pr-8 cursor-pointer flex-1 sm:flex-none">
-              <option value="all">Semua Kategori</option>
-              <option value="organik">Organik</option>
-              <option value="anorganik">Anorganik</option>
-            </select>
-          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+  <select
+    value={filterStatus}
+    onChange={e => setFilterStatus(e.target.value)}
+    className="input-field w-full sm:w-auto !py-2.5 text-sm !pr-8 cursor-pointer"
+  >
+    <option value="all">Semua Status</option>
+    <option value="pending">Menunggu</option>
+    <option value="approved">Disetujui</option>
+    <option value="rejected">Ditolak</option>
+  </select>
+
+  <select
+    value={filterCategory}
+    onChange={e => setFilterCategory(e.target.value)}
+    className="input-field w-full sm:w-auto !py-2.5 text-sm !pr-8 cursor-pointer"
+  >
+    <option value="all">Semua Kategori</option>
+    <option value="organik">Organik</option>
+    <option value="anorganik">Anorganik</option>
+  </select>
+</div>
         </div>
       </div>
 
