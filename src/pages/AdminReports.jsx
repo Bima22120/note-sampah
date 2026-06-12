@@ -166,7 +166,7 @@ export default function AdminReports() {
         groups[dateStr] = { 
           dateStr, 
           masuk: 0, organik: 0, anorganik: 0, count: 0, 
-          olahan: 0, notes: '' 
+          olahan: 0, processing_date: '', notes: '' 
         };
       }
       groups[dateStr].masuk += r.weight_grams;
@@ -182,10 +182,13 @@ export default function AdminReports() {
         groups[dateStr] = { 
           dateStr, 
           masuk: 0, organik: 0, anorganik: 0, count: 0, 
-          olahan: 0, notes: '' 
+          olahan: 0, processing_date: '', notes: '' 
         };
       }
       groups[dateStr].olahan += p.processed_weight_grams;
+      if (p.processing_date) {
+        groups[dateStr].processing_date = new Date(p.processing_date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
       if (p.notes) {
         groups[dateStr].notes = groups[dateStr].notes ? `${groups[dateStr].notes}; ${p.notes}` : p.notes;
       }
@@ -199,7 +202,8 @@ export default function AdminReports() {
 
       return {
         'No': i + 1,
-        'Tanggal': new Date(g.dateStr + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        'Tanggal Sampah Masuk': new Date(g.dateStr + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        'Tanggal Diolah': g.processing_date || '-',
         'Jumlah Laporan': g.count,
         'Organik Masuk (kg)': (g.organik / 1000).toFixed(2),
         'Anorganik Masuk (kg)': (g.anorganik / 1000).toFixed(2),
@@ -221,7 +225,8 @@ export default function AdminReports() {
 
     dataRekap.push({
       'No': '',
-      'Tanggal': 'TOTAL KESELURUHAN',
+      'Tanggal Sampah Masuk': 'TOTAL KESELURUHAN',
+      'Tanggal Diolah': '',
       'Jumlah Laporan': approved.length,
       'Organik Masuk (kg)': (totalOrganikAll / 1000).toFixed(2),
       'Anorganik Masuk (kg)': (totalAnorganikAll / 1000).toFixed(2),

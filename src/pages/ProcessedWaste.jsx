@@ -26,7 +26,8 @@ export default function ProcessedWaste() {
   const [loading, setLoading] = useState(true);
 
   // Form state
-  const [formDate, setFormDate] = useState('');
+  const [formDate, setFormDate] = useState(''); // Target Date (Tanggal Masuk)
+  const [formProcessingDate, setFormProcessingDate] = useState(''); // Tanggal Diolah
   const [formWeight, setFormWeight] = useState('');
   const [formNotes, setFormNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -110,7 +111,8 @@ export default function ProcessedWaste() {
   // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formDate) { toast.error('Pilih tanggal!'); return; }
+    if (!formDate) { toast.error('Pilih tanggal masuk!'); return; }
+    if (!formProcessingDate) { toast.error('Pilih tanggal diolah!'); return; }
     if (!formWeight || Number(formWeight) <= 0) { toast.error('Masukkan berat yang valid!'); return; }
     setSubmitting(true);
 
@@ -121,6 +123,7 @@ export default function ProcessedWaste() {
           .from('processed_waste')
           .update({
             date: formDate,
+            processing_date: formProcessingDate,
             processed_weight_grams: Number(formWeight),
             notes: formNotes.trim() || null,
             updated_at: new Date().toISOString(),
@@ -129,18 +132,12 @@ export default function ProcessedWaste() {
         if (error) throw error;
         toast.success('Data olahan berhasil diperbarui!');
       } else {
-        // Check if date already exists
-        const existing = processedData.find((p) => p.date === formDate);
-        if (existing) {
-          toast.error('Tanggal ini sudah ada datanya. Silakan edit data yang ada.');
-          setSubmitting(false);
-          return;
-        }
         // Insert new
         const { error } = await supabase
           .from('processed_waste')
           .insert({
             date: formDate,
+            processing_date: formProcessingDate,
             processed_weight_grams: Number(formWeight),
             notes: formNotes.trim() || null,
             created_by: user?.id || null,
@@ -151,8 +148,8 @@ export default function ProcessedWaste() {
 
       // Reset form
       setFormDate('');
+      setFormProcessingDate('');
       setFormWeight('');
-      setFormNotes('');
       setEditingId(null);
       fetchAll();
     } catch (e) {
@@ -166,9 +163,9 @@ export default function ProcessedWaste() {
   const handleEdit = (item) => {
     setEditingId(item.id);
     setFormDate(item.date);
+    setFormProcessingDate(item.processing_date || item.date);
     setFormWeight(String(item.processed_weight_grams));
     setFormNotes(item.notes || '');
-    // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -191,6 +188,7 @@ export default function ProcessedWaste() {
   const cancelEdit = () => {
     setEditingId(null);
     setFormDate('');
+    setFormProcessingDate('');
     setFormWeight('');
     setFormNotes('');
   };
@@ -220,13 +218,18 @@ export default function ProcessedWaste() {
       return;
     }
 
-    const data = chartData.map((d, i) => ({
-      'No': i + 1,
-      'Tanggal': new Date(d.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-      'Total Sampah Masuk (kg)': (d.totalMasuk / 1000).toFixed(2),
-      'Total Sampah Olahan (kg)': (d.totalOlahan / 1000).toFixed(2),
-      'Persentase Olahan (%)': d.persentase,
-    }));
+    const data = chartData.map((d, i) => {
+      // Cari tanggal olahan untuk baris ini
+      const proc = processedData.find((p) => p.date === d.date);
+      return {
+        'No': i + 1,
+        'Tanggal Sampah Masuk': new Date(d.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        'Tanggal Diolah': proc?.processing_date ? new Date(proc.processing_date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-',
+        'Total Sampah Masuk (kg)': (d.totalMasuk / 1000).toFixed(2),
+        'Total Sampah Olahan (kg)': (d.totalOlahan / 1000).toFixed(2),
+        'Persentase Olahan (%)': d.persentase,
+      };
+    });
 
     // Total row
     const totalMasuk = chartData.reduce((s, d) => s + d.totalMasuk, 0);
@@ -237,7 +240,8 @@ export default function ProcessedWaste() {
 
     data.push({
       'No': '',
-      'Tanggal': 'TOTAL / RATA-RATA',
+      'Tanggal Sampah Masuk': 'TOTAL / RATA-RATA',
+      'Tanggal Diolah': '',
       'Total Sampah Masuk (kg)': (totalMasuk / 1000).toFixed(2),
       'Total Sampah Olahan (kg)': (totalOlahan / 1000).toFixed(2),
       'Persentase Olahan (%)': avgPersentase,
@@ -335,20 +339,48 @@ export default function ProcessedWaste() {
           {editingId ? '✏️ Edit Data Olahan' : 'Tambah Data Olahan'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
             <div>
               <label htmlFor="procDate" className="input-label flex items-center gap-2">
-                <HiOutlineCalendar className="w-4 h-4" /> Tanggal
+                <HiOutlineCalendar className="w-4 h-4" /> Tanggal Sampah Masuk
               </label>
-              <input
+              <select
                 id="procDate"
-                type="date"
                 value={formDate}
                 onChange={(e) => setFormDate(e.target.value)}
                 className="input-field"
                 required
-              />
+              >
+                <option value="">-- Pilih Tanggal --</option>
+                {Object.keys(reportsByDate).sort((a, b) => b.localeCompare(a)).map(dateStr => {
+                  const hasProcessed = processedData.find(p => p.date === dateStr);
+                  if (hasProcessed && hasProcessed.id !== editingId) return null; // Sembunyikan yang sudah ada datanya kecuali sedang diedit
+                  return (
+                    <option key={dateStr} value={dateStr}>
+                      {new Date(dateStr + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (Masuk: {fmtWeight(reportsByDate[dateStr].total)})
+                    </option>
+                  );
+                })}
+              </select>
+              <p className="text-xs theme-text-faint mt-1">Hanya tanggal yang ada laporan disetujui yang bisa dipilih.</p>
             </div>
+            <div>
+              <label htmlFor="procProcessingDate" className="input-label flex items-center gap-2">
+                <HiOutlineCalendar className="w-4 h-4 text-emerald-500" /> Tanggal Diolah
+              </label>
+              <input
+                id="procProcessingDate"
+                type="date"
+                value={formProcessingDate}
+                onChange={(e) => setFormProcessingDate(e.target.value)}
+                className="input-field"
+                required
+              />
+              <p className="text-xs theme-text-faint mt-1">Tanggal saat Anda mengolah sampah tersebut.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label htmlFor="procWeight" className="input-label flex items-center gap-2">
                 <HiOutlineScale className="w-4 h-4" /> Berat Olahan (gram)
@@ -460,7 +492,8 @@ export default function ProcessedWaste() {
               <thead>
                 <tr style={{ backgroundColor: 'var(--bg-input)' }}>
                   <th className="text-left px-4 py-3 font-semibold theme-text-muted">No</th>
-                  <th className="text-left px-4 py-3 font-semibold theme-text-muted">Tanggal</th>
+                  <th className="text-left px-4 py-3 font-semibold theme-text-muted">Tgl. Masuk</th>
+                  <th className="text-left px-4 py-3 font-semibold theme-text-muted">Tgl. Diolah</th>
                   <th className="text-right px-4 py-3 font-semibold theme-text-muted">Sampah Masuk</th>
                   <th className="text-right px-4 py-3 font-semibold theme-text-muted">Sampah Olahan</th>
                   <th className="text-right px-4 py-3 font-semibold theme-text-muted">Persentase</th>
@@ -476,8 +509,11 @@ export default function ProcessedWaste() {
                   return (
                     <tr key={p.id} className="border-t transition-colors hover:bg-slate-500/5" style={{ borderColor: 'var(--border-color)' }}>
                       <td className="px-4 py-3 theme-text-faint">{i + 1}</td>
-                      <td className="px-4 py-3 font-medium theme-text-secondary">
-                        {new Date(p.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      <td className="px-4 py-3 font-medium theme-text-secondary whitespace-nowrap">
+                        {new Date(p.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                        {p.processing_date ? new Date(p.processing_date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                       </td>
                       <td className="px-4 py-3 text-right text-blue-500 dark:text-blue-400 font-medium">
                         {reportTotal > 0 ? fmtWeight(reportTotal) : <span className="theme-text-faint text-xs">tidak ada</span>}
