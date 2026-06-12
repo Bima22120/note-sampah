@@ -14,6 +14,7 @@ import repurposeImg from '../assets/repurpose.png';
 export default function AdminReports() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
+  const [processedData, setProcessedData] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
