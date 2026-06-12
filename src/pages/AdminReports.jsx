@@ -128,7 +128,13 @@ export default function AdminReports() {
     }
   };
 
-  const downloadExcel = () => {
+  const downloadExcel = async () => {
+    // Ambil data sampah olahan dari database
+    const { data: processedData } = await supabase
+      .from('processed_waste')
+      .select('*')
+      .order('date', { ascending: true });
+
     // Sheet 1: Daftar Laporan Detail
     const dataDetail = filtered.map((r, i) => ({
       'No': i + 1,
@@ -144,14 +150,12 @@ export default function AdminReports() {
     }));
 
     const wsDetail = XLSX.utils.json_to_sheet(dataDetail);
-    
-    // Auto-fit column widths for detail
     const colWidthsDetail = Object.keys(dataDetail[0] || {}).map(key => ({
       wch: Math.max(key.length, ...dataDetail.map(r => String(r[key] || '').length)) + 2
     }));
     wsDetail['!cols'] = colWidthsDetail;
 
-    // Sheet 2: Rekapitulasi Harian (Hanya Laporan Disetujui)
+    // Sheet 2: Rekapitulasi Laporan Masuk
     const approved = filtered.filter(r => r.status === 'approved');
     const groups = {};
     
@@ -172,13 +176,12 @@ export default function AdminReports() {
     const dataRekap = groupedData.map((g, i) => ({
       'No': i + 1,
       'Tanggal': g.period,
-      'Jumlah Laporan': g.count,
+      'Jumlah Laporan Masuk': g.count,
       'Organik (kg)': (g.organik / 1000).toFixed(2),
       'Anorganik (kg)': (g.anorganik / 1000).toFixed(2),
-      'Total Berat (kg)': (g.total / 1000).toFixed(2),
+      'Total Berat Masuk (kg)': (g.total / 1000).toFixed(2),
     }));
 
-    // Total row for rekap
     const totalOrganik = approved.reduce((sum, r) => sum + (r.category === 'organik' ? r.weight_grams : 0), 0);
     const totalAnorganik = approved.reduce((sum, r) => sum + (r.category === 'anorganik' ? r.weight_grams : 0), 0);
     const totalWeight = approved.reduce((sum, r) => sum + r.weight_grams, 0);
@@ -186,10 +189,10 @@ export default function AdminReports() {
     dataRekap.push({
       'No': '',
       'Tanggal': 'TOTAL KESELURUHAN',
-      'Jumlah Laporan': approved.length,
+      'Jumlah Laporan Masuk': approved.length,
       'Organik (kg)': (totalOrganik / 1000).toFixed(2),
       'Anorganik (kg)': (totalAnorganik / 1000).toFixed(2),
-      'Total Berat (kg)': (totalWeight / 1000).toFixed(2),
+      'Total Berat Masuk (kg)': (totalWeight / 1000).toFixed(2),
     });
 
     const wsRekap = XLSX.utils.json_to_sheet(dataRekap);
@@ -198,14 +201,51 @@ export default function AdminReports() {
     }));
     wsRekap['!cols'] = colWidthsRekap;
 
+    // Sheet 3: Data Sampah Olahan
+    const dataOlahan = (processedData || []).map((p, i) => {
+      // Cari total laporan disetujui pada tanggal tersebut
+      const tgl = p.date;
+      const reportsOnDate = approved.filter(r => new Date(r.created_at).toISOString().slice(0, 10) === tgl);
+      const totalMasukDate = reportsOnDate.reduce((sum, r) => sum + r.weight_grams, 0);
+      const percentage = totalMasukDate > 0 ? (p.processed_weight_grams / totalMasukDate * 100) : (p.processed_weight_grams > 0 ? 100 : 0);
+
+      return {
+        'No': i + 1,
+        'Tanggal': new Date(p.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        'Total Sampah Masuk (kg)': (totalMasukDate / 1000).toFixed(2),
+        'Total Sampah Olahan (kg)': (p.processed_weight_grams / 1000).toFixed(2),
+        'Persentase Olahan (%)': percentage.toFixed(2),
+        'Catatan': p.notes || '-'
+      };
+    });
+
+    const totalOlahanKeseluruhan = (processedData || []).reduce((sum, p) => sum + p.processed_weight_grams, 0);
+    const avgPersentase = dataOlahan.length > 0 ? dataOlahan.reduce((sum, p) => sum + Number(p['Persentase Olahan (%)']), 0) / dataOlahan.length : 0;
+
+    dataOlahan.push({
+      'No': '',
+      'Tanggal': 'TOTAL KESELURUHAN',
+      'Total Sampah Masuk (kg)': (totalWeight / 1000).toFixed(2),
+      'Total Sampah Olahan (kg)': (totalOlahanKeseluruhan / 1000).toFixed(2),
+      'Persentase Olahan (%)': avgPersentase.toFixed(2),
+      'Catatan': ''
+    });
+
+    const wsOlahan = XLSX.utils.json_to_sheet(dataOlahan);
+    const colWidthsOlahan = Object.keys(dataOlahan[0] || {}).map(key => ({
+      wch: Math.max(key.length, ...dataOlahan.map(r => String(r[key] || '').length)) + 2
+    }));
+    wsOlahan['!cols'] = colWidthsOlahan;
+
     // Create workbook and append sheets
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, wsDetail, 'Semua Laporan');
-    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekapitulasi (Disetujui)');
+    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekapitulasi Masuk');
+    XLSX.utils.book_append_sheet(wb, wsOlahan, 'Data Olahan');
     
     const dateStr = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
-    XLSX.writeFile(wb, `Laporan_Dan_Rekap_Sampah_${dateStr}.xlsx`);
-    toast.success('File Excel berhasil didownload! Buka file untuk melihat rekapitulasi.');
+    XLSX.writeFile(wb, `Laporan_Dan_Olahan_Sampah_${dateStr}.xlsx`);
+    toast.success('File Excel berhasil didownload! Berisi Detail, Rekap, dan Data Olahan.');
   };
 
   const fmtWeight = (g) => g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
