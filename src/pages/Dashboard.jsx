@@ -11,6 +11,7 @@ import {
   HiChevronDown,
   HiChevronUp,
   HiOutlineClock,
+  HiOutlineDatabase,
 } from 'react-icons/hi';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -24,6 +25,7 @@ export default function Dashboard() {
   // Data State
   const [allReports, setAllReports] = useState([]);
   const [allProcessed, setAllProcessed] = useState([]);
+  const [dbStats, setDbStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRecentReportsOpen, setIsRecentReportsOpen] = useState(false);
   
@@ -47,6 +49,11 @@ export default function Dashboard() {
 
       setAllReports(reportsRes.data || []);
       setAllProcessed(procRes.data || []);
+
+      if (isAdmin) {
+        const { data: stats } = await supabase.rpc('get_db_stats');
+        if (stats) setDbStats(stats);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -183,8 +190,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 3 Simple Big Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Metrics */}
+      <div className={`grid grid-cols-1 md:grid-cols-3 ${isAdmin && dbStats ? 'lg:grid-cols-4' : ''} gap-4`}>
         {/* Sampah Masuk */}
         <div className="glass-card p-5 sm:p-6 flex flex-col justify-center relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500" />
@@ -225,6 +232,30 @@ export default function Dashboard() {
             />
           </div>
         </div>
+
+        {/* Memori Database (Hanya Admin & Jika RPC Berhasil) */}
+        {isAdmin && dbStats && (
+          <div className="glass-card p-5 sm:p-6 flex flex-col justify-center relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full group-hover:scale-150 transition-transform duration-500" />
+            <p className="text-sm font-semibold theme-text-muted mb-1 relative z-10 flex items-center gap-2">
+              <HiOutlineDatabase className="w-4 h-4" /> Memori Database
+            </p>
+            <p className="text-2xl sm:text-3xl font-bold text-purple-500 dark:text-purple-400 mb-2 relative z-10 truncate">
+              {(dbStats.db_size_bytes / 1024 / 1024).toFixed(2)} <span className="text-sm sm:text-base">MB</span>
+            </p>
+            <div className="w-full bg-slate-500/10 rounded-full h-2 relative z-10">
+              <div
+                className={`h-2 rounded-full transition-all duration-1000 ${
+                  (dbStats.db_size_bytes / dbStats.db_limit_bytes) > 0.8 ? 'bg-red-500' : 'bg-purple-500'
+                }`}
+                style={{ width: `${Math.min(100, (dbStats.db_size_bytes / dbStats.db_limit_bytes) * 100)}%` }}
+              />
+            </div>
+            <p className="text-[10px] sm:text-xs theme-text-faint mt-2 relative z-10">
+              Kapasitas Maks: {(dbStats.db_limit_bytes / 1024 / 1024).toFixed(0)} MB
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Main Actions - Very Simple */}
