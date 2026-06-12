@@ -13,7 +13,7 @@ import {
   HiOutlineClock,
 } from 'react-icons/hi';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import compostImg from '../assets/compost.png';
 import repurposeImg from '../assets/repurpose.png';
@@ -87,28 +87,47 @@ export default function Dashboard() {
     const processedInPeriod = allProcessed.filter(p => new Date(p.date) >= startDate);
     const totalOlahan = processedInPeriod.reduce((sum, p) => sum + p.processed_weight_grams, 0);
 
+    const sisa = Math.max(0, totalMasuk - totalOlahan);
     const percentage = totalMasuk > 0 ? Math.min(100, (totalOlahan / totalMasuk) * 100) : 0;
 
-    // Data untuk Chart
-    const cData = processedInPeriod.map(p => ({
-      dateLabel: new Date(p.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-      olahan: p.processed_weight_grams
+    // Data untuk Chart (Gabungan Masuk dan Olahan per Hari)
+    const chartGroups = {};
+    
+    approvedInPeriod.forEach(r => {
+      const dKey = new Date(r.created_at).toISOString().slice(0, 10);
+      if(!chartGroups[dKey]) chartGroups[dKey] = { dateLabel: new Date(dKey + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }), masuk: 0, olahan: 0, date: dKey };
+      chartGroups[dKey].masuk += r.weight_grams;
+    });
+
+    processedInPeriod.forEach(p => {
+      const dKey = p.date;
+      if(!chartGroups[dKey]) chartGroups[dKey] = { dateLabel: new Date(dKey + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }), masuk: 0, olahan: 0, date: dKey };
+      chartGroups[dKey].olahan += p.processed_weight_grams;
+    });
+
+    const cData = Object.values(chartGroups).sort((a,b) => a.date.localeCompare(b.date)).map(d => ({
+      ...d,
+      persentase: d.masuk > 0 ? Math.min(100, (d.olahan / d.masuk * 100)) : (d.olahan > 0 ? 100 : 0)
     }));
 
     return {
-      totalMasuk, totalOlahan, percentage, pendingCount, cData, organikMasuk, anorganikMasuk
+      totalMasuk, totalOlahan, sisa, percentage, pendingCount, cData, organikMasuk, anorganikMasuk
     };
   }, [allReports, allProcessed, period]);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-      <div className="glass-card p-3 shadow-xl text-sm" style={{ minWidth: 150 }}>
+      <div className="glass-card p-3 shadow-xl text-sm" style={{ minWidth: 200 }}>
         <p className="font-semibold theme-text-primary mb-2">{label}</p>
-        <div className="flex justify-between gap-4">
-          <span style={{ color: payload[0].color }}>Olahan</span>
-          <span className="font-medium theme-text-secondary">{fmtWeight(payload[0].value)}</span>
-        </div>
+        {payload.map((p, i) => (
+          <div key={i} className="flex justify-between gap-4 mb-1">
+            <span style={{ color: p.color }}>{p.name}</span>
+            <span className="font-medium theme-text-secondary">
+              {p.dataKey === 'persentase' ? `${p.value.toFixed(1)}%` : fmtWeight(p.value)}
+            </span>
+          </div>
+        ))}
       </div>
     );
   };
@@ -185,7 +204,10 @@ export default function Dashboard() {
           <p className="text-3xl sm:text-4xl font-bold text-emerald-500 dark:text-emerald-400 mb-2 relative z-10">
             {fmtWeight(filteredData.totalOlahan)}
           </p>
-          <p className="text-xs theme-text-faint relative z-10">Sampah yang telah diproses menjadi bermanfaat</p>
+          <div className="flex items-center gap-2 text-xs font-medium relative z-10">
+            <span className="theme-text-muted">Sisa belum diolah:</span>
+            <span className="text-amber-500">{fmtWeight(filteredData.sisa)}</span>
+          </div>
         </div>
 
         {/* Persentase */}
@@ -236,23 +258,21 @@ export default function Dashboard() {
         <div className="glass-card p-4 sm:p-6">
           <h2 className="text-sm sm:text-base font-semibold theme-text-primary mb-4 flex items-center gap-2">
             <HiOutlineTrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-            Grafik Pertumbuhan Sampah Olahan
+            Grafik Pertumbuhan Sampah Masuk vs Olahan
           </h2>
-          <div className="w-full h-48 sm:h-56">
+          <div className="w-full h-56 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={filteredData.cData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorOlahan" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
+              <ComposedChart data={filteredData.cData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="dateLabel" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                <YAxis yAxisId="left" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="olahan" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorOlahan)" />
-              </AreaChart>
+                <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text-muted)' }} />
+                <Bar yAxisId="left" dataKey="masuk" name="Sampah Masuk" fill="#3b82f6" radius={[4, 4, 0, 0]} opacity={0.5} maxBarSize={40} />
+                <Bar yAxisId="left" dataKey="olahan" name="Sampah Diolah" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Line yAxisId="right" type="monotone" dataKey="persentase" name="Persentase (%)" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b', r: 4 }} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
