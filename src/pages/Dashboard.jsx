@@ -94,7 +94,8 @@ export default function Dashboard() {
     const chartGroups = {};
     
     approvedInPeriod.forEach(r => {
-      const dKey = new Date(r.created_at).toISOString().slice(0, 10);
+      const d = new Date(r.created_at);
+      const dKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       if(!chartGroups[dKey]) chartGroups[dKey] = { dateLabel: new Date(dKey + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }), masuk: 0, olahan: 0, date: dKey };
       chartGroups[dKey].masuk += r.weight_grams;
     });

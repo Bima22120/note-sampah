@@ -50,12 +50,21 @@ export default function AdminReports() {
       toast.error('Koneksi terputus. Silakan muat ulang halaman.');
     }, 8000);
     try {
-      const { data, error } = await supabase
-        .from('waste_reports')
-        .select('*, profiles:user_id(full_name)')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      setReports(data || []);
+      const [reportsRes, procRes] = await Promise.all([
+        supabase
+          .from('waste_reports')
+          .select('*, profiles:user_id(full_name)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('processed_waste')
+          .select('*')
+      ]);
+
+      if (reportsRes.error) throw reportsRes.error;
+      if (procRes.error) throw procRes.error;
+
+      setReports(reportsRes.data || []);
+      setProcessedData(procRes.data || []);
       clearTimeout(safetyTimer);
     } catch (e) { 
       console.error(e); 
@@ -129,11 +138,6 @@ export default function AdminReports() {
   };
 
   const downloadExcel = async () => {
-    // Ambil data sampah olahan dari database
-    const { data: processedData } = await supabase
-      .from('processed_waste')
-      .select('*')
-      .order('date', { ascending: true });
 
     // Sheet 1: Daftar Laporan Detail
     const dataDetail = filtered.map((r, i) => ({
@@ -161,7 +165,8 @@ export default function AdminReports() {
     
     // 1. Group Laporan Masuk by Date
     approved.forEach(r => {
-      const dateStr = new Date(r.created_at).toISOString().slice(0, 10);
+      const d = new Date(r.created_at);
+      const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       if (!groups[dateStr]) {
         groups[dateStr] = { 
           dateStr, 
@@ -382,6 +387,21 @@ export default function AdminReports() {
                         }`}>
                           {r.status === 'approved' ? '✓ Disetujui' : r.status === 'rejected' ? '✕ Ditolak' : '⏳ Menunggu'}
                         </span>
+                        {(() => {
+                          if (r.status !== 'approved') return null;
+                          const d = new Date(r.created_at);
+                          const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                          const hasProcessed = processedData.some(p => p.date === dateStr);
+                          return hasProcessed ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                              Sudah Diolah
+                            </span>
+                          ) : (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-500/15 text-slate-600 dark:text-slate-400">
+                              Belum Diolah
+                            </span>
+                          );
+                        })()}
                       </div>
                       <p className="theme-text-faint text-xs mt-0.5 truncate">{r.description}</p>
                       <p className="text-xs mt-0.5 theme-text-faint">{fmtDate(r.created_at)} • {fmtWeight(r.weight_grams)} • {r.category}</p>

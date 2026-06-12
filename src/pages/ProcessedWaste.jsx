@@ -66,11 +66,12 @@ export default function ProcessedWaste() {
     }
   };
 
-  // Group approved reports by date
+  // Group approved reports by date (local timezone)
   const reportsByDate = useMemo(() => {
     const map = {};
     reports.forEach((r) => {
-      const dateKey = new Date(r.created_at).toISOString().slice(0, 10);
+      const d = new Date(r.created_at);
+      const dateKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       if (!map[dateKey]) map[dateKey] = { total: 0, organik: 0, anorganik: 0 };
       map[dateKey].total += r.weight_grams;
       if (r.category === 'organik') map[dateKey].organik += r.weight_grams;
