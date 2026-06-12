@@ -115,6 +115,14 @@ export default function ProcessedWaste() {
     if (!formDate) { toast.error('Pilih tanggal masuk!'); return; }
     if (!formProcessingDate) { toast.error('Pilih tanggal diolah!'); return; }
     if (!formWeight || Number(formWeight) <= 0) { toast.error('Masukkan berat yang valid!'); return; }
+    
+    // Validasi berat tidak boleh melebihi total sampah masuk di tanggal tersebut
+    const maxWeight = reportsByDate[formDate]?.total || 0;
+    if (Number(formWeight) > maxWeight) {
+      toast.error(`Berat olahan tidak boleh melebihi total sampah masuk (${maxWeight >= 1000 ? (maxWeight/1000).toFixed(1) + ' kg' : maxWeight + ' g'})!`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
