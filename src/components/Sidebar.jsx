@@ -14,6 +14,7 @@ import {
   HiOutlineSun,
   HiOutlineMoon,
   HiOutlineScale,
+  HiOutlineCog,
 } from 'react-icons/hi';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -56,6 +57,7 @@ export default function Sidebar() {
     { to: '/admin/pending', icon: HiOutlineShieldCheck, label: 'Persetujuan' },
     { to: '/admin/reports', icon: HiOutlineDocumentReport, label: 'Semua Laporan' },
     { to: '/admin/processed', icon: HiOutlineScale, label: 'Sampah Olahan' },
+    { to: '/admin/settings', icon: HiOutlineCog, label: 'Pengaturan' },
   ];
 
   const links = isAdmin ? adminLinks : userLinks;

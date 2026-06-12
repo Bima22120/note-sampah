@@ -13,6 +13,7 @@ import MyReports from './pages/MyReports';
 import AdminPending from './pages/AdminPending';
 import AdminReports from './pages/AdminReports';
 import ProcessedWaste from './pages/ProcessedWaste';
+import AdminSettings from './pages/AdminSettings';
 
 function ThemedToaster() {
   const { isDark } = useTheme();
@@ -84,6 +85,14 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly>
                       <ProcessedWaste />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminSettings />
                     </ProtectedRoute>
                   }
                 />
