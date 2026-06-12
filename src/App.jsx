@@ -12,7 +12,6 @@ import NewReport from './pages/NewReport';
 import MyReports from './pages/MyReports';
 import AdminPending from './pages/AdminPending';
 import AdminReports from './pages/AdminReports';
-import ReportSummary from './pages/ReportSummary';
 import ProcessedWaste from './pages/ProcessedWaste';
 
 function ThemedToaster() {
@@ -77,14 +76,6 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly>
                       <AdminReports />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/report-summary"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <ReportSummary />
                     </ProtectedRoute>
                   }
                 />

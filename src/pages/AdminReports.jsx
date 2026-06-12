@@ -129,55 +129,83 @@ export default function AdminReports() {
   };
 
   const downloadExcel = () => {
-    const data = filtered.map((r, i) => ({
+    // Sheet 1: Daftar Laporan Detail
+    const dataDetail = filtered.map((r, i) => ({
       'No': i + 1,
       'Pelapor': r.nama_pelapor || r.profiles?.full_name || '-',
       'RT': r.rt || '-',
       'RW': r.rw || '-',
       'Kategori': r.category === 'organik' ? 'Organik' : 'Anorganik',
-      'Organik (kg)': r.category === 'organik' ? (r.weight_grams / 1000).toFixed(2) : '0',
-      'Anorganik (kg)': r.category === 'anorganik' ? (r.weight_grams / 1000).toFixed(2) : '0',
-      'Total Berat (kg)': (r.weight_grams / 1000).toFixed(2),
+      'Berat (kg)': (r.weight_grams / 1000).toFixed(2),
       'Keterangan': r.description,
       'Status': r.status === 'approved' ? 'Disetujui' : r.status === 'rejected' ? 'Ditolak' : 'Menunggu',
       'Catatan Admin': r.admin_notes || '-',
-      'Tanggal Laporan': new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      'Tanggal Laporan': new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
     }));
 
-    const wsData = [...data];
-    const totalOrganik = filtered.reduce((sum, r) => sum + (r.category === 'organik' ? r.weight_grams : 0), 0);
-    const totalAnorganik = filtered.reduce((sum, r) => sum + (r.category === 'anorganik' ? r.weight_grams : 0), 0);
-    const totalWeight = filtered.reduce((sum, r) => sum + r.weight_grams, 0);
+    const wsDetail = XLSX.utils.json_to_sheet(dataDetail);
+    
+    // Auto-fit column widths for detail
+    const colWidthsDetail = Object.keys(dataDetail[0] || {}).map(key => ({
+      wch: Math.max(key.length, ...dataDetail.map(r => String(r[key] || '').length)) + 2
+    }));
+    wsDetail['!cols'] = colWidthsDetail;
 
-    wsData.push({
+    // Sheet 2: Rekapitulasi Harian (Hanya Laporan Disetujui)
+    const approved = filtered.filter(r => r.status === 'approved');
+    const groups = {};
+    
+    approved.forEach(r => {
+      const dateKey = new Date(r.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const sortKey = new Date(r.created_at).toISOString().slice(0, 10);
+      if (!groups[dateKey]) {
+        groups[dateKey] = { period: dateKey, sortKey, organik: 0, anorganik: 0, total: 0, count: 0 };
+      }
+      groups[dateKey].total += r.weight_grams;
+      groups[dateKey].count += 1;
+      if (r.category === 'organik') groups[dateKey].organik += r.weight_grams;
+      else groups[dateKey].anorganik += r.weight_grams;
+    });
+
+    const groupedData = Object.values(groups).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+    
+    const dataRekap = groupedData.map((g, i) => ({
+      'No': i + 1,
+      'Tanggal': g.period,
+      'Jumlah Laporan': g.count,
+      'Organik (kg)': (g.organik / 1000).toFixed(2),
+      'Anorganik (kg)': (g.anorganik / 1000).toFixed(2),
+      'Total Berat (kg)': (g.total / 1000).toFixed(2),
+    }));
+
+    // Total row for rekap
+    const totalOrganik = approved.reduce((sum, r) => sum + (r.category === 'organik' ? r.weight_grams : 0), 0);
+    const totalAnorganik = approved.reduce((sum, r) => sum + (r.category === 'anorganik' ? r.weight_grams : 0), 0);
+    const totalWeight = approved.reduce((sum, r) => sum + r.weight_grams, 0);
+
+    dataRekap.push({
       'No': '',
-      'Pelapor': 'TOTAL KESELURUHAN',
-      'RT': '',
-      'RW': '',
-      'Kategori': '',
+      'Tanggal': 'TOTAL KESELURUHAN',
+      'Jumlah Laporan': approved.length,
       'Organik (kg)': (totalOrganik / 1000).toFixed(2),
       'Anorganik (kg)': (totalAnorganik / 1000).toFixed(2),
       'Total Berat (kg)': (totalWeight / 1000).toFixed(2),
-      'Keterangan': '',
-      'Status': '',
-      'Catatan Admin': '',
-      'Tanggal Laporan': '',
     });
 
-    const ws = XLSX.utils.json_to_sheet(wsData);
-    
-    // Auto-fit column widths
-    const colWidths = Object.keys(wsData[0] || {}).map(key => ({
-      wch: Math.max(key.length, ...wsData.map(r => String(r[key] || '').length)) + 2
+    const wsRekap = XLSX.utils.json_to_sheet(dataRekap);
+    const colWidthsRekap = Object.keys(dataRekap[0] || {}).map(key => ({
+      wch: Math.max(key.length, ...dataRekap.map(r => String(r[key] || '').length)) + 2
     }));
-    ws['!cols'] = colWidths;
+    wsRekap['!cols'] = colWidthsRekap;
 
+    // Create workbook and append sheets
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Laporan Sampah');
+    XLSX.utils.book_append_sheet(wb, wsDetail, 'Semua Laporan');
+    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekapitulasi (Disetujui)');
     
     const dateStr = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
-    XLSX.writeFile(wb, `Laporan_Sampah_${dateStr}.xlsx`);
-    toast.success('File Excel berhasil didownload!');
+    XLSX.writeFile(wb, `Laporan_Dan_Rekap_Sampah_${dateStr}.xlsx`);
+    toast.success('File Excel berhasil didownload! Buka file untuk melihat rekapitulasi.');
   };
 
   const fmtWeight = (g) => g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
