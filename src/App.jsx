@@ -12,6 +12,8 @@ import NewReport from './pages/NewReport';
 import MyReports from './pages/MyReports';
 import AdminPending from './pages/AdminPending';
 import AdminReports from './pages/AdminReports';
+import ReportSummary from './pages/ReportSummary';
+import ProcessedWaste from './pages/ProcessedWaste';
 
 function ThemedToaster() {
   const { isDark } = useTheme();
@@ -75,6 +77,22 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly>
                       <AdminReports />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/report-summary"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ReportSummary />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/processed"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ProcessedWaste />
                     </ProtectedRoute>
                   }
                 />
