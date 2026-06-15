@@ -345,7 +345,7 @@ export default function ProcessedWaste() {
       <div className="glass-card p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold theme-text-primary mb-4 flex items-center gap-2">
           <HiOutlinePlusCircle className="w-5 h-5 text-primary-500 dark:text-primary-400" />
-          {editingId ? '✏️ Edit Data Olahan' : 'Tambah Data Olahan'}
+          {editingId ? 'Edit Data Olahan' : 'Tambah Data Olahan'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
@@ -435,7 +435,7 @@ export default function ProcessedWaste() {
             <button type="submit" disabled={submitting} className="btn-primary flex items-center gap-2 !py-2.5 text-sm">
               {submitting ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>Menyimpan...</span></>
-              ) : editingId ? '💾 Simpan Perubahan' : '➕ Tambah Data'}
+              ) : editingId ? 'Simpan Perubahan' : '+ Tambah Data'}
             </button>
             {editingId && (
               <button type="button" onClick={cancelEdit} className="btn-secondary !py-2.5 text-sm">

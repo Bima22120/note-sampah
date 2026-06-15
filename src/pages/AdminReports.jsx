@@ -441,7 +441,7 @@ export default function AdminReports() {
               {editingReport === r.id ? (
                 /* Edit Mode */
                 <div className="space-y-3 sm:space-y-4">
-                  <p className="font-semibold text-sm theme-text-primary">✏️ Edit Laporan</p>
+                  <p className="font-semibold text-sm theme-text-primary">Edit Laporan</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-xs theme-text-faint mb-1 block">Kategori</label>
@@ -477,7 +477,7 @@ export default function AdminReports() {
                       className="input-field !py-2 text-sm" placeholder="Tambahkan catatan..." />
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => handleSaveEdit(r.id)} className="btn-primary !py-2 !px-4 text-sm">💾 Simpan</button>
+                    <button onClick={() => handleSaveEdit(r.id)} className="btn-primary !py-2 !px-4 text-sm">Simpan</button>
                     <button onClick={() => setEditingReport(null)} className="btn-secondary !py-2 !px-4 text-sm">Batal</button>
                   </div>
                 </div>
