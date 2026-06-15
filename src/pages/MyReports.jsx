@@ -68,8 +68,10 @@ export default function MyReports() {
                     <img src={getCategoryImage(r.category)} alt={r.category} className="category-img" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium capitalize theme-text-secondary text-sm sm:text-base">{r.category}</p>
-                    <p className="theme-text-faint text-xs sm:text-sm truncate">{r.description}</p>
+                    <p className="font-medium theme-text-secondary text-sm sm:text-base truncate">
+                      {r.nama_pelapor || r.profiles?.full_name || 'Tanpa Nama'} {r.rt && r.rw ? `(RT ${r.rt}/RW ${r.rw})` : ''}
+                    </p>
+                    <p className="theme-text-faint text-xs sm:text-sm capitalize mt-0.5">{r.category} • {r.description}</p>
                     <p className="theme-text-faint text-xs mt-1">{fmtDate(r.created_at)}</p>
                   </div>
                 </div>

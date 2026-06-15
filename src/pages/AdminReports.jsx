@@ -76,6 +76,33 @@ export default function AdminReports() {
     }
   };
 
+  const validateProcessLimit = (reportId, newWeight, newStatus) => {
+    const report = reports.find(r => r.id === reportId);
+    if (!report) return true;
+
+    const d = new Date(report.created_at);
+    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    
+    const processedForDate = processedData.find(p => p.date === dateStr);
+    if (!processedForDate) return true; // Aman jika belum ada olahan di tanggal ini
+
+    const otherApprovedTotal = reports
+      .filter(r => r.id !== reportId && r.status === 'approved')
+      .filter(r => {
+        const rd = new Date(r.created_at);
+        return (rd.getFullYear() + '-' + String(rd.getMonth() + 1).padStart(2, '0') + '-' + String(rd.getDate()).padStart(2, '0')) === dateStr;
+      })
+      .reduce((sum, r) => sum + r.weight_grams, 0);
+
+    const finalTotalMasuk = otherApprovedTotal + (newStatus === 'approved' ? Number(newWeight) : 0);
+
+    if (finalTotalMasuk < processedForDate.processed_weight_grams) {
+      toast.error(`Aksi ditolak! Total sampah masuk (${(finalTotalMasuk/1000).toFixed(1)}kg) tidak boleh kurang dari sampah olahan (${(processedForDate.processed_weight_grams/1000).toFixed(1)}kg). Hapus/Edit data olahan terlebih dahulu!`, { duration: 6000 });
+      return false;
+    }
+    return true;
+  };
+
   const handleEdit = (report) => {
     setEditingReport(report.id);
     setEditForm({
@@ -88,6 +115,9 @@ export default function AdminReports() {
   };
 
   const handleSaveEdit = async (reportId) => {
+    if (!validateProcessLimit(reportId, editForm.weight_grams, editForm.status)) {
+      return;
+    }
     try {
       const { error } = await supabase
         .from('waste_reports')
@@ -109,6 +139,10 @@ export default function AdminReports() {
   };
 
   const handleDelete = async (reportId) => {
+    if (!validateProcessLimit(reportId, 0, 'deleted')) {
+      setDeleteConfirm(null);
+      return;
+    }
     try {
       const { error } = await supabase
         .from('waste_reports')
@@ -125,6 +159,10 @@ export default function AdminReports() {
   };
 
   const handleStatusChange = async (reportId, status) => {
+    const report = reports.find(r => r.id === reportId);
+    if (report && !validateProcessLimit(reportId, report.weight_grams, status)) {
+      return;
+    }
     try {
       const { error } = await supabase
         .from('waste_reports')
@@ -160,8 +198,10 @@ export default function AdminReports() {
     }));
     wsDetail['!cols'] = colWidthsDetail;
 
-    // Sheet 2: Rekapitulasi Harian (Gabungan Masuk & Olahan)
-    const approved = filtered.filter(r => r.status === 'approved');
+    // Sheet 2: Rekapitulasi Harian (Gabungan Masuk & Olahan) - SELALU MENGGUNAKAN DATA GLOBAL UNFILTERED
+    // Karena processedData tidak memiliki filter (kategori/pelapor), jika kita gabungkan dengan waste_reports yang difilter,
+    // maka hitungan matematika (Sisa, Persentase) akan kacau.
+    const approved = reports.filter(r => r.status === 'approved');
     const groups = {};
     
     // 1. Group Laporan Masuk by Date
