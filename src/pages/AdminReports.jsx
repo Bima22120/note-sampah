@@ -289,13 +289,91 @@ export default function AdminReports() {
     }));
     wsRekap['!cols'] = colWidthsRekap;
 
+    // ==========================================
+    // 3. REKAPITULASI MINGGUAN & BULANAN
+    // ==========================================
+    const getWeekString = (dateStr) => {
+      const d = new Date(dateStr + 'T00:00:00');
+      const weekNo = Math.ceil(d.getDate() / 7);
+      const monthStr = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+      return `Minggu ke-${weekNo > 4 ? 4 : weekNo}, ${monthStr}`;
+    };
+
+    const getMonthString = (dateStr) => {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    };
+
+    const groupsMingguan = {};
+    const groupsBulanan = {};
+
+    groupedData.forEach(g => {
+      const wKey = getWeekString(g.dateStr);
+      if(!groupsMingguan[wKey]) groupsMingguan[wKey] = { name: wKey, masuk:0, organik:0, anorganik:0, olahan:0, count:0 };
+      groupsMingguan[wKey].masuk += g.masuk;
+      groupsMingguan[wKey].organik += g.organik;
+      groupsMingguan[wKey].anorganik += g.anorganik;
+      groupsMingguan[wKey].olahan += g.olahan;
+      groupsMingguan[wKey].count += g.count;
+
+      const mKey = getMonthString(g.dateStr);
+      if(!groupsBulanan[mKey]) groupsBulanan[mKey] = { name: mKey, masuk:0, organik:0, anorganik:0, olahan:0, count:0 };
+      groupsBulanan[mKey].masuk += g.masuk;
+      groupsBulanan[mKey].organik += g.organik;
+      groupsBulanan[mKey].anorganik += g.anorganik;
+      groupsBulanan[mKey].olahan += g.olahan;
+      groupsBulanan[mKey].count += g.count;
+    });
+
+    const buildRekapSheet = (groupsObj, periodKeyName) => {
+      const data = Object.values(groupsObj).map((g, i) => {
+        const percentage = g.masuk > 0 ? (g.olahan / g.masuk * 100) : (g.olahan > 0 ? 100 : 0);
+        const sisa = Math.max(0, g.masuk - g.olahan);
+        return {
+          'No': i + 1,
+          [periodKeyName]: g.name,
+          'Jumlah Laporan': g.count,
+          'Organik Masuk (kg)': (g.organik / 1000).toFixed(2),
+          'Anorganik Masuk (kg)': (g.anorganik / 1000).toFixed(2),
+          'Total Masuk (kg)': (g.masuk / 1000).toFixed(2),
+          'Total Olahan (kg)': (g.olahan / 1000).toFixed(2),
+          'Sisa Sampah (kg)': (sisa / 1000).toFixed(2),
+          'Persentase Olahan (%)': percentage.toFixed(2)
+        };
+      });
+
+      // Total row
+      data.push({
+        'No': '',
+        [periodKeyName]: 'TOTAL KESELURUHAN',
+        'Jumlah Laporan': approved.length,
+        'Organik Masuk (kg)': (totalOrganikAll / 1000).toFixed(2),
+        'Anorganik Masuk (kg)': (totalAnorganikAll / 1000).toFixed(2),
+        'Total Masuk (kg)': (totalMasukAll / 1000).toFixed(2),
+        'Total Olahan (kg)': (totalOlahanAll / 1000).toFixed(2),
+        'Sisa Sampah (kg)': (totalSisaAll / 1000).toFixed(2),
+        'Persentase Olahan (%)': avgPersentaseAll.toFixed(2)
+      });
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      ws['!cols'] = Object.keys(data[0] || {}).map(key => ({
+        wch: Math.max(key.length, ...data.map(r => String(r[key] || '').length)) + 2
+      }));
+      return ws;
+    };
+
+    const wsRekapMingguan = buildRekapSheet(groupsMingguan, 'Periode Mingguan');
+    const wsRekapBulanan = buildRekapSheet(groupsBulanan, 'Periode Bulanan');
+
     // Create workbook and append sheets
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsDetail, 'Detail Semua Laporan');
-    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekapitulasi Harian');
+    XLSX.utils.book_append_sheet(wb, wsDetail, 'Detail Laporan Masuk');
+    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekap Harian');
+    XLSX.utils.book_append_sheet(wb, wsRekapMingguan, 'Rekap Mingguan');
+    XLSX.utils.book_append_sheet(wb, wsRekapBulanan, 'Rekap Bulanan');
     
-    const dateStr = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
-    XLSX.writeFile(wb, `Laporan_Dan_Olahan_Sampah_${dateStr}.xlsx`);
+    const fileDateStr = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
+    XLSX.writeFile(wb, `Laporan_Dan_Olahan_Sampah_${fileDateStr}.xlsx`);
     toast.success('File Excel berhasil didownload!');
   };
 
