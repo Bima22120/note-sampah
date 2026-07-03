@@ -166,6 +166,12 @@ export default function Sidebar() {
             <span>Login Admin</span>
           </NavLink>
         )}
+        
+        <div className="mt-4 text-center pb-2">
+          <p className="text-[11px] theme-text-faint font-medium tracking-wide">
+            by KKN A6 UWKS
+          </p>
+        </div>
       </div>
     </div>
   );
