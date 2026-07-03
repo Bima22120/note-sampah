@@ -19,6 +19,7 @@ import {
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import logoGambar from '../assets/oasesongo.jpg';
+import logoWijaya from '../assets/wijayaLogo.png';
 
 export default function Sidebar() {
   const { profile, signOut, isAdmin } = useAuth();
@@ -66,16 +67,21 @@ export default function Sidebar() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-6 pb-6 pt-16 lg:p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
-        <div className="flex items-center gap-3">
-          {isAdmin ? (
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-              <img src={logoGambar} alt="Logo NoteSampah" className="w-full h-full object-cover" />
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-auto flex items-center justify-center shrink-0">
+              <img src={logoWijaya} alt="Logo UWKS" className="h-full w-auto object-contain" />
             </div>
-          ) : (
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30 shrink-0">
-              <span className="text-white font-bold text-lg">♻</span>
-            </div>
-          )}
+            {isAdmin ? (
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                <img src={logoGambar} alt="Logo NoteSampah" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30 shrink-0">
+                <span className="text-white font-bold text-lg">♻</span>
+              </div>
+            )}
+          </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight theme-text-primary">NoteSampah</h1>
             <p className="text-xs theme-text-faint">{isAdmin ? 'Panel Admin' : 'Kelola Sampah Cerdas'}</p>
